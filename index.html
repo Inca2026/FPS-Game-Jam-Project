@@ -2,397 +2,638 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Operation: Peacock Down (Top-Down Tactical)</title>
+  <title>Operation: Peacock Down — Pixel Tactical</title>
   <style>
+    * { box-sizing: border-box; image-rendering: pixelated; }
     body {
-      margin: 0; overflow: hidden; background: #1a120b;
-      font-family: 'Courier New', monospace; user-select: none;
+      margin: 0; overflow: hidden; background: #141013;
+      font-family: 'Courier New', monospace; user-select: none; color: #f4f4f4;
     }
     canvas { display: block; cursor: crosshair; }
+    .pixel-box {
+      background: #221c24; border: 4px solid #f4d35e;
+      box-shadow: 0 0 0 4px #0d0a0e, inset 0 0 0 3px #3b303f;
+    }
     #hud {
-      position: fixed; top: 15px; left: 15px; color: #00ff66;
-      background: rgba(10, 15, 10, 0.85); padding: 12px 16px;
-      border: 2px solid #00ff66; font-size: 14px; line-height: 1.5;
+      position: fixed; top: 12px; left: 12px; padding: 10px 14px;
+      font-size: 13px; line-height: 1.5; z-index: 5; min-width: 270px;
     }
-    #dialogue {
-      position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-      width: 75%; max-width: 760px; background: rgba(12, 18, 28, 0.94);
-      color: #ffd700; border: 2px solid #ffd700; padding: 14px 20px;
-      font-size: 15px; display: none; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.8);
+    #menuBtn {
+      position: fixed; top: 12px; right: 12px; padding: 8px 14px;
+      font-family: inherit; font-weight: bold; cursor: pointer; z-index: 6;
+      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e;
     }
-    #overlay {
-      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.88); color: #fff;
+    #dialogueWrap {
+      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      width: 82%; max-width: 780px; display: none; z-index: 8;
+      padding: 12px; gap: 14px; align-items: center;
+    }
+    #portrait {
+      width: 68px; height: 68px; border: 3px solid #0d0a0e;
+      background: #3b303f; flex-shrink: 0;
+    }
+    #dialogueText { flex: 1; font-size: 14px; line-height: 1.4; }
+    #speakerName { color: #f4d35e; font-weight: bold; margin-bottom: 4px; text-transform: uppercase; }
+    #dialogueHint { font-size: 11px; color: #aaa; margin-top: 6px; }
+    .screen {
+      position: fixed; inset: 0; background: rgba(13, 10, 14, 0.92);
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; z-index: 10; cursor: pointer;
+      z-index: 20; padding: 20px; text-align: center;
     }
-    h1 { color: #ffd700; margin-bottom: 8px; letter-spacing: 2px; }
-    button {
-      margin-top: 15px; padding: 12px 28px; font-size: 16px; font-family: inherit;
-      background: #ffd700; color: #111; border: none; font-weight: bold; cursor: pointer;
+    .panel { padding: 24px 32px; max-width: 540px; width: 100%; }
+    h1 { color: #f4d35e; margin: 0 0 8px; font-size: 26px; letter-spacing: 2px; }
+    .btn {
+      display: inline-block; margin: 8px 6px; padding: 10px 22px;
+      font-family: inherit; font-size: 15px; font-weight: bold;
+      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e; cursor: pointer;
+    }
+    .btn:hover { background: #ffe680; }
+    .setting-row {
+      display: flex; justify-content: space-between; align-items: center;
+      margin: 12px 0; font-size: 14px; text-align: left;
     }
   </style>
 </head>
 <body>
-  <div id="overlay">
-    <h1>OPERATION: PEACOCK DOWN</h1>
-    <p>WASD / Arrow Keys to Move | Mouse to Aim | Click to Fire</p>
-    <p style="color:#aaa; font-size:13px;">Infiltrate the Golden Palace, grab baklava, and neutralize Emperor Xerxes IV.</p>
-    <button id="startBtn">DEPLOY GHOST-7</button>
+  <div id="titleScreen" class="screen">
+    <div class="panel pixel-box">
+      <h1>OPERATION: PEACOCK DOWN</h1>
+      <p style="color:#ccc; font-size:13px;">A Pixel-Art Stealth-Action Satire</p>
+      <p style="font-size:13px; line-height:1.5; text-align:left; background:#141013; padding:10px; border:2px solid #3b303f;">
+        <strong>BRIEFING:</strong> Emperor Xerxes IV has hijacked the global pistachio supply to fuel his Golden Peacock Mech. Infiltrate the palace, avoid vision cones for silent takedowns, steal the Vault Keycard, and end his brunch forever.
+      </p>
+      <button class="btn" id="playBtn">START MISSION</button>
+      <button class="btn" id="openSettingsBtn">SETTINGS</button>
+    </div>
   </div>
-  <div id="hud">
-    <div><strong>OPERATIVE:</strong> GHOST-7 | <strong>HP:</strong> <span id="hp">100</span>%</div>
-    <div><strong>ACT:</strong> <span id="act">1 - OUTER COURTYARD</span></div>
-    <div><strong>HOSTILES REMAINING:</strong> <span id="count">0</span></div>
+
+  <div id="settingsScreen" class="screen" style="display:none;">
+    <div class="panel pixel-box">
+      <h1>MISSION SETTINGS</h1>
+      <div class="setting-row">
+        <span>Sound Effects (Retro Synth)</span>
+        <input type="checkbox" id="optSound" checked />
+      </div>
+      <div class="setting-row">
+        <span>Difficulty Mode</span>
+        <select id="optDiff" style="font-family:inherit; padding:4px;">
+          <option value="casual">Cadet (Forgiving Guards)</option>
+          <option value="agent" selected>Agent (Balanced)</option>
+          <option value="ghost">Ghost (Lethal Vision)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span>Show Enemy Vision Cones</span>
+        <input type="checkbox" id="optCones" checked />
+      </div>
+      <p style="font-size:12px; color:#aaa; margin-top:14px;">
+        <strong>CONTROLS:</strong> WASD Move | Shift Sneak | E/Space Silent Takedown / Interact | Click Shoot | R Reload | F Advance Dialogue
+      </p>
+      <button class="btn" id="closeSettingsBtn">BACK</button>
+    </div>
   </div>
-  <div id="dialogue"></div>
+
+  <button id="menuBtn">MENU [ESC]</button>
+
+  <div id="hud" class="pixel-box">
+    <div><strong>GHOST-7</strong> | HP: <span id="hp">100</span>% | <span id="stealthState" style="color:#5efc82;">HIDDEN</span></div>
+    <div>AMMO: <span id="ammo">8</span>/8 <span id="reloadTag" style="color:#ff6b6b;"></span> | INTEL: <span id="intel">0</span>/3</div>
+    <div>OBJECTIVE: <span id="objText" style="color:#f4d35e;">Find the Gold Keycard</span></div>
+  </div>
+
+  <div id="dialogueWrap" class="pixel-box">
+    <canvas id="portrait" width="16" height="16"></canvas>
+    <div id="dialogueText">
+      <div id="speakerName">HQ</div>
+      <div id="speakerLine">...</div>
+      <div id="dialogueHint">[Press F or Click Box to Continue]</div>
+    </div>
+  </div>
+
   <canvas id="game"></canvas>
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    const pCanvas = document.getElementById('portrait');
+    const pCtx = pCanvas.getContext('2d');
 
-    window.addEventListener('resize', () => {
+    function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
-    });
+      ctx.imageSmoothingEnabled = false;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
+    const settings = { sound: true, diff: 'agent', cones: true };
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playSound(freqStart, freqEnd, type = 'sawtooth', duration = 0.1) {
+
+    function sfx(f1, f2, type = 'square', dur = 0.09, vol = 0.1) {
+      if (!settings.sound) return;
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + duration);
-      gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + duration);
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = type;
+      o.frequency.setValueAtTime(f1, audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(f2, audioCtx.currentTime + dur);
+      g.gain.setValueAtTime(vol, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dur);
     }
 
-    const dialogueEl = document.getElementById('dialogue');
-    let dialogueTimeout;
-    function say(speaker, line, duration = 5500) {
-      clearTimeout(dialogueTimeout);
-      dialogueEl.innerHTML = `<strong>[${speaker}]:</strong> "${line}"`;
-      dialogueEl.style.display = 'block';
-      dialogueTimeout = setTimeout(() => { dialogueEl.style.display = 'none'; }, duration);
+    // Kindergarten-style Pixel Portrait Drawer
+    function drawPortrait(who) {
+      pCtx.clearRect(0, 0, 16, 16);
+      pCtx.fillStyle = who === 'XERXES' ? '#4a1525' : (who === 'GUARD' ? '#1b365d' : '#1f3325');
+      pCtx.fillRect(0, 0, 16, 16);
+
+      // Head outline & skin
+      pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(3, 2, 10, 12);
+      pCtx.fillStyle = who === 'HQ' ? '#d8a47f' : '#c68642'; pCtx.fillRect(4, 3, 8, 10);
+
+      if (who === 'HQ') {
+        pCtx.fillStyle = '#2d3a27'; pCtx.fillRect(3, 2, 10, 3); // Beret
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Grumpy eyes
+        pCtx.fillStyle = '#5c3a21'; pCtx.fillRect(5, 10, 6, 2); // Mustache
+      } else if (who === 'GUARD') {
+        pCtx.fillStyle = '#f4e8c1'; pCtx.fillRect(3, 1, 10, 4); // Turban
+        pCtx.fillStyle = '#fff'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Wide panicked eyes
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 2); // Open mouth
+      } else if (who === 'XERXES') {
+        pCtx.fillStyle = '#f4d35e'; pCtx.fillRect(3, 0, 10, 4); // Crown
+        pCtx.fillStyle = '#ff4d4d'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Angry eyes
+        pCtx.fillStyle = '#111'; pCtx.fillRect(4, 10, 8, 4); // Huge royal beard
+      }
     }
 
-    const WORLD_W = 1200;
-    const WORLD_H = 2600;
+    // Queueable Story Dialogue System
+    const dialogueQueue = [];
+    let activeDialogue = null;
+    const dWrap = document.getElementById('dialogueWrap');
+
+    function queueDialogue(lines) {
+      for (const l of lines) dialogueQueue.push(l);
+      if (!activeDialogue) nextDialogue();
+    }
+
+    function nextDialogue() {
+      if (dialogueQueue.length === 0) {
+        activeDialogue = null;
+        dWrap.style.display = 'none';
+        return;
+      }
+      activeDialogue = dialogueQueue.shift();
+      document.getElementById('speakerName').textContent = activeDialogue.name;
+      document.getElementById('speakerLine').textContent = activeDialogue.text;
+      drawPortrait(activeDialogue.portrait || 'HQ');
+      dWrap.style.display = 'flex';
+      sfx(320, 480, 'triangle', 0.06, 0.08);
+    }
+
+    dWrap.addEventListener('click', nextDialogue);
+
+    // Menu & Settings Navigation
+    let paused = true;
+    let gameStarted = false;
+    const titleScreen = document.getElementById('titleScreen');
+    const settingsScreen = document.getElementById('settingsScreen');
+
+    document.getElementById('openSettingsBtn').onclick = () => {
+      titleScreen.style.display = 'none';
+      settingsScreen.style.display = 'flex';
+    };
+    document.getElementById('closeSettingsBtn').onclick = () => {
+      settings.sound = document.getElementById('optSound').checked;
+      settings.diff = document.getElementById('optDiff').value;
+      settings.cones = document.getElementById('optCones').checked;
+      settingsScreen.style.display = 'none';
+      if (!gameStarted) titleScreen.style.display = 'flex';
+      else paused = false;
+    };
+    document.getElementById('menuBtn').onclick = () => {
+      if (!gameStarted) return;
+      paused = true;
+      settingsScreen.style.display = 'flex';
+    };
+    const WORLD_W = 1280;
+    const WORLD_H = 2800;
+
     const player = {
-      x: WORLD_W / 2, y: WORLD_H - 180, radius: 18,
-      speed: 260, angle: -Math.PI / 2, hp: 100, recoil: 0
+      x: 640, y: 2620, r: 16, angle: -Math.PI / 2,
+      hp: 100, ammo: 8, maxAmmo: 8, fireCooldown: 0, reloading: 0,
+      hasKeycard: false, intelCount: 0, alerted: false, alarmTimer: 0
     };
 
     const walls = [
-      { x: 0, y: 0, w: 60, h: WORLD_H },
-      { x: WORLD_W - 60, y: 0, w: 60, h: WORLD_H },
-      { x: 0, y: 0, w: WORLD_W, h: 60 },
-      { x: 0, y: WORLD_H - 60, w: WORLD_W, h: 60 },
-      { x: 60, y: 1850, w: 420, h: 45 },
-      { x: 720, y: 1850, w: 420, h: 45 },
-      { x: 60, y: 1150, w: 420, h: 45 },
-      { x: 720, y: 1150, w: 420, h: 45 },
-      { x: 60, y: 550, w: 440, h: 45 },
-      { x: 700, y: 550, w: 440, h: 45 }
+      { x: 0, y: 0, w: 48, h: WORLD_H },
+      { x: WORLD_W - 48, y: 0, w: 48, h: WORLD_H },
+      { x: 0, y: 0, w: WORLD_W, h: 48 },
+      { x: 0, y: WORLD_H - 48, w: WORLD_W, h: 48 },
+      // Courtyard Dividers (Sneak Cover)
+      { x: 48, y: 2150, w: 460, h: 40 },
+      { x: 772, y: 2150, w: 460, h: 40 },
+      { x: 320, y: 2350, w: 140, h: 90 },
+      { x: 820, y: 2350, w: 140, h: 90 },
+      // Hall of Mirrors & Keycard Wing
+      { x: 48, y: 1450, w: 480, h: 40 },
+      { x: 752, y: 1450, w: 480, h: 40 },
+      { x: 240, y: 1750, w: 180, h: 120 },
+      { x: 860, y: 1750, w: 180, h: 120 },
+      // Locked Throne Gate (Opens with Gold Keycard)
+      { x: 48, y: 780, w: 472, h: 48 },
+      { x: 760, y: 780, w: 472, h: 48 }
     ];
 
-    const pillars = [];
-    for (let y = 300; y <= 2300; y += 260) {
-      pillars.push({ x: 260, y, r: 28 });
-      pillars.push({ x: WORLD_W - 260, y, r: 28 });
-    }
+    const throneDoor = { x: 520, y: 780, w: 240, h: 48, locked: true };
 
-    const enemies = [];
-    function addEnemy(x, y, type = 'guard') {
-      enemies.push({
-        x, y, type,
-        radius: type === 'boss' ? 32 : 18,
-        hp: type === 'boss' ? 25 : (type === 'immortal' ? 4 : 2),
-        maxHp: type === 'boss' ? 25 : (type === 'immortal' ? 4 : 2),
-        angle: Math.PI / 2, cooldown: Math.random() * 1.5, hitFlash: 0
+    const items = [
+      { type: 'keycard', x: 1120, y: 1620, taken: false, label: 'GOLD KEYCARD' },
+      { type: 'intel', x: 150, y: 2260, taken: false, label: 'DIARY #1' },
+      { type: 'intel', x: 1100, y: 1100, taken: false, label: 'DIARY #2' },
+      { type: 'intel', x: 160, y: 920, taken: false, label: 'DIARY #3' },
+      { type: 'baklava', x: 160, y: 1600, taken: false, label: 'BAKLAVA' },
+      { type: 'baklava', x: 1120, y: 920, taken: false, label: 'BAKLAVA' }
+    ];
+
+    const guards = [];
+    function spawnGuard(x, y, patrolA, patrolB, role = 'guard') {
+      guards.push({
+        x, y, ax: patrolA.x, ay: patrolA.y, bx: patrolB.x, by: patrolB.y,
+        toB: true, role,
+        r: role === 'boss' ? 28 : 16,
+        hp: role === 'boss' ? 24 : (role === 'immortal' ? 4 : 2),
+        maxHp: role === 'boss' ? 24 : (role === 'immortal' ? 4 : 2),
+        angle: Math.PI / 2, shootCd: 1.0, alertLevel: 0, flash: 0
       });
     }
 
-    addEnemy(400, 2150, 'guard'); addEnemy(800, 2150, 'guard'); addEnemy(600, 1980, 'guard');
-    addEnemy(350, 1600, 'immortal'); addEnemy(850, 1600, 'immortal');
-    addEnemy(450, 1320, 'guard'); addEnemy(750, 1320, 'immortal');
-    addEnemy(350, 920, 'immortal'); addEnemy(850, 920, 'immortal'); addEnemy(600, 740, 'immortal');
-    addEnemy(WORLD_W / 2, 240, 'boss');
-    const pickups = [
-      { x: 180, y: 1960, collected: false },
-      { x: 1020, y: 1260, collected: false },
-      { x: 180, y: 660, collected: false }
-    ];
+    // Patrolling Guards (Backstab = Instant Silent Kill!)
+    spawnGuard(420, 2480, { x: 300, y: 2480 }, { x: 600, y: 2480 }, 'guard');
+    spawnGuard(900, 2280, { x: 700, y: 2280 }, { x: 1050, y: 2280 }, 'guard');
+    spawnGuard(520, 1950, { x: 480, y: 1950 }, { x: 800, y: 1950 }, 'immortal');
+    spawnGuard(1060, 1620, { x: 960, y: 1560 }, { x: 1140, y: 1700 }, 'immortal');
+    spawnGuard(320, 1250, { x: 220, y: 1250 }, { x: 640, y: 1250 }, 'immortal');
+    spawnGuard(920, 960, { x: 640, y: 960 }, { x: 1080, y: 960 }, 'immortal');
+    spawnGuard(640, 280, { x: 460, y: 280 }, { x: 820, y: 280 }, 'boss');
 
     const bullets = [];
     const keys = {};
-    const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
-    let gameRunning = false;
+    const mouse = { x: 0, y: 0 };
 
-    document.addEventListener('keydown', e => keys[e.code] = true);
+    document.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      if (e.code === 'KeyF' && activeDialogue) nextDialogue();
+      if (e.code === 'KeyR' && !paused && !activeDialogue && player.ammo < player.maxAmmo && player.reloading <= 0) {
+        player.reloading = 1.35;
+        sfx(240, 160, 'triangle', 0.15);
+      }
+      if ((e.code === 'KeyE' || e.code === 'Space') && !paused && !activeDialogue) handleInteractOrStealth();
+      if (e.code === 'Escape' && gameStarted) {
+        paused = !paused;
+        settingsScreen.style.display = paused ? 'flex' : 'none';
+      }
+    });
     document.addEventListener('keyup', e => keys[e.code] = false);
     document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
 
-    document.getElementById('startBtn').addEventListener('click', () => {
-      document.getElementById('overlay').style.display = 'none';
-      gameRunning = true;
-      say("HQ", "Listen up, Ghost-7. Take out Emperor Xerxes IV—and grab any baklava trays you spot. Budget cuts hit the cafeteria hard.");
-    });
-
+    document.getElementById('playBtn').onclick = () => {
+      titleScreen.style.display = 'none';
+      gameStarted = true;
+      paused = false;
+      queueDialogue([
+        { name: 'HQ (Colonel Mustard)', portrait: 'HQ', text: "Alright Ghost-7, listen closely. You only brought 8 bullets per magazine because accounting said 'nobody needs full-auto.'" },
+        { name: 'HQ (Colonel Mustard)', portrait: 'HQ', text: "Stay out of the guards' yellow vision cones! Sneak behind them and press [E] for a silent spatula-choke. If they spot you, they'll sound the alarm!" }
+      ]);
+    };
+    // Balanced Semi-Auto Gun (Cooldown + Magazine + Accuracy Bloom)
     canvas.addEventListener('mousedown', () => {
-      if (!gameRunning || player.hp <= 0) return;
-      playSound(520, 90, 'sawtooth', 0.09);
-      player.recoil = 6;
-      const gunTipX = player.x + Math.cos(player.angle) * 26;
-      const gunTipY = player.y + Math.sin(player.angle) * 26;
+      if (paused || activeDialogue || player.hp <= 0) return;
+      if (player.reloading > 0) return;
+      if (player.ammo <= 0) {
+        player.reloading = 1.35;
+        sfx(180, 120, 'sawtooth', 0.12);
+        return;
+      }
+      if (player.fireCooldown > 0) return;
+
+      player.ammo -= 1;
+      player.fireCooldown = 0.34; // Prevents spamming
+      const spread = (keys['ShiftLeft'] ? 0.02 : 0.08);
+      const shotAngle = player.angle + (Math.random() - 0.5) * spread;
+      sfx(540, 110, 'sawtooth', 0.08);
+
       bullets.push({
-        x: gunTipX, y: gunTipY,
-        vx: Math.cos(player.angle) * 780,
-        vy: Math.sin(player.angle) * 780,
-        fromPlayer: true, life: 1.2
+        x: player.x + Math.cos(player.angle) * 22,
+        y: player.y + Math.sin(player.angle) * 22,
+        vx: Math.cos(shotAngle) * 720,
+        vy: Math.sin(shotAngle) * 720,
+        fromPlayer: true, life: 1.0
       });
+
+      // Gunshot noise alerts nearby guards
+      for (const g of guards) {
+        if (Math.hypot(g.x - player.x, g.y - player.y) < 380) triggerAlarm(g);
+      }
     });
 
-    const triggers = [
-      { y: 2180, fired: false, speaker: "PALACE GUARD", text: "Halt! Wait—is that standard-issue Kevlar? Ugh, I didn't even iron my ceremonial tunic today." },
-      { y: 1780, fired: false, speaker: "HQ", text: "Entering Hall of Mirrors. Watch out for the Royal Immortals—they're grumpy because palace Wi-Fi is down." },
-      { y: 1100, fired: false, speaker: "EMPEROR XERXES IV (PA)", text: "Intruder! You dare track desert sand onto my imported silk rugs?! Do you know what the dry-cleaning bill is?!" },
-      { y: 520, fired: false, speaker: "EMPEROR XERXES IV", text: "Enough! Behold my Golden Peacock Exosuit! ...Wait, who forgot to charge the batteries?! Keep shooting!" }
-    ];
-    function drawPlayerModel(p) {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.angle);
-
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath(); ctx.arc(-2, 4, 19, 0, Math.PI * 2); ctx.fill();
-
-      ctx.fillStyle = '#2d3a27';
-      ctx.fillRect(-18, -11, 8, 22);
-
-      ctx.fillStyle = '#4a5d3f';
-      ctx.beginPath(); ctx.ellipse(0, 0, 14, 19, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = '#1b2416'; ctx.lineWidth = 2; ctx.stroke();
-
-      const kick = -p.recoil;
-      ctx.fillStyle = '#1f2421'; ctx.fillRect(6 + kick, 4, 24, 5);
-      ctx.fillStyle = '#3a403d'; ctx.fillRect(2 + kick, 3, 12, 7);
-
-      ctx.fillStyle = '#3b4b32';
-      ctx.beginPath();
-      ctx.arc(6, -11, 5, 0, Math.PI * 2);
-      ctx.arc(12 + kick, 7, 5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = '#263020';
-      ctx.beginPath(); ctx.arc(0, 0, 11, 0, Math.PI * 2); ctx.fill();
-
-      ctx.fillStyle = '#00ff66';
-      ctx.beginPath();
-      ctx.arc(9, -4, 2.5, 0, Math.PI * 2);
-      ctx.arc(9, 4, 2.5, 0, Math.PI * 2);
-      ctx.arc(11, 0, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    }
-
-    function drawEnemyModel(e) {
-      ctx.save();
-      ctx.translate(e.x, e.y);
-      ctx.rotate(e.angle);
-
-      if (e.type === 'boss') {
-        for (let i = -3; i <= 3; i++) {
-          ctx.save(); ctx.rotate(i * 0.25);
-          ctx.fillStyle = i % 2 === 0 ? '#1d4e89' : '#00a896';
-          ctx.beginPath(); ctx.ellipse(-26, 0, 16, 6, 0, 0, Math.PI * 2); ctx.fill();
-          ctx.restore();
+    function triggerAlarm(guard) {
+      if (!player.alerted) {
+        player.alerted = true;
+        sfx(680, 920, 'square', 0.25, 0.12);
+        if (guard.role !== 'boss') {
+          queueDialogue([{ name: 'PALACE GUARD', portrait: 'GUARD', text: "HEY! Someone's sneaking around in tactical pajamas! Sound the brunch alarm!" }]);
         }
-        ctx.fillStyle = e.hitFlash > 0 ? '#fff' : '#ffd700';
-        ctx.beginPath(); ctx.arc(0, 0, 28, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#7a5c00'; ctx.lineWidth = 3; ctx.stroke();
+      }
+      player.alarmTimer = 9.0;
+    }
 
-        ctx.fillStyle = '#333';
-        ctx.fillRect(10, -22, 24, 7);
-        ctx.fillRect(10, 15, 24, 7);
+    function handleInteractOrStealth() {
+      // 1. Check Silent Backstab Takedown
+      for (let i = guards.length - 1; i >= 0; i--) {
+        const g = guards[i];
+        if (g.role === 'boss') continue;
+        const dist = Math.hypot(player.x - g.x, player.y - g.y);
+        if (dist < 46) {
+          const angleToPlayer = Math.atan2(player.y - g.y, player.x - g.x);
+          let diff = Math.abs(angleToPlayer - g.angle);
+          if (diff > Math.PI) diff = 2 * Math.PI - diff;
+          if (diff > 1.7 || !player.alerted) {
+            guards.splice(i, 1);
+            sfx(160, 60, 'triangle', 0.14);
+            queueDialogue([{ name: 'GHOST-7 (Thinking)', portrait: 'HQ', text: "Night-night. Saved a bullet and kept my boots clean." }]);
+            return;
+          }
+        }
+      }
 
-        ctx.fillStyle = '#8b1e24';
-        ctx.beginPath(); ctx.arc(2, 0, 13, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#ffd700';
-        ctx.beginPath(); ctx.arc(4, 0, 8, 0, Math.PI * 2); ctx.fill();
+      // 2. Check Throne Door Unlock
+      if (throneDoor.locked && Math.hypot(player.x - 640, player.y - 804) < 90) {
+        if (player.hasKeycard) {
+          throneDoor.locked = false;
+          sfx(440, 880, 'sine', 0.2);
+          document.getElementById('objText').textContent = "Defeat Emperor Xerxes IV";
+          queueDialogue([
+            { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "WHO DARES INTERRUPT MY SAFFRON OMELETTE?! Guards, why is nobody answering the intercom?!" },
+            { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Fine! I'll crush you myself in my Golden Peacock Mech—just as soon as the seat warmer finishes preheating!" }
+          ]);
+        } else {
+          queueDialogue([{ name: 'DOOR INTERCOM', portrait: 'GUARD', text: "Access Denied! Only VIPs with the shiny Gold Keycard from the East Wing may enter." }]);
+        }
+      }
+    }
+
+    // Pixel-Art Character Sprite Helper (Draws chunky pixel blocks with black outline)
+    function drawPixelChar(x, y, angle, style, flash) {
+      ctx.save();
+      ctx.translate(Math.round(x), Math.round(y));
+      ctx.rotate(angle);
+
+      const px = (gx, gy, gw, gh, col) => {
+        ctx.fillStyle = flash > 0 ? '#ffffff' : col;
+        ctx.fillRect(gx * 3, gy * 3, gw * 3, gh * 3);
+      };
+
+      if (style === 'boss') {
+        px(-8, -8, 16, 16, '#0d0a0e'); // Outline
+        px(-7, -7, 14, 14, '#f4d35e'); // Gold Mech Body
+        px(-9, -6, 3, 12, '#1d4e89');  // Peacock Tail Feathers
+        px(2, -7, 8, 3, '#333333');    // Left Cannon
+        px(2, 4, 8, 3, '#333333');     // Right Cannon
+        px(-3, -3, 6, 6, '#8b1e24');   // Emperor Turban
+        return ctx.restore();
+      }
+
+      px(-5, -6, 10, 12, '#0d0a0e'); // Chunky pixel outline
+      if (style === 'player') {
+        px(-4, -5, 8, 10, '#4a5d3f'); // Olive Vest
+        px(-6, -3, 2, 6, '#2d3a27');  // Rucksack
+        px(2, 1, 7, 2, '#1f2421');    // Silenced Pistol/SMG
+        px(-3, -3, 6, 6, '#263020');  // Helmet
+        px(2, -2, 2, 4, '#5efc82');   // Glowing Goggles
       } else {
-        const tunicColor = e.type === 'immortal' ? '#6a1b9a' : '#1d4e89';
-        ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : tunicColor;
-        ctx.beginPath(); ctx.ellipse(0, 0, 13, 18, 0, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 2; ctx.stroke();
-
-        ctx.fillStyle = '#c0c0c0'; ctx.fillRect(4, 5, 22, 4);
-        ctx.fillStyle = e.type === 'immortal' ? '#ffd700' : '#f4e8c1';
-        ctx.beginPath(); ctx.arc(0, 0, 10, 0, Math.PI * 2); ctx.fill();
+        const bodyCol = style === 'immortal' ? '#6a1b9a' : '#1d4e89';
+        const hatCol = style === 'immortal' ? '#f4d35e' : '#f4e8c1';
+        px(-4, -5, 8, 10, bodyCol);   // Tunic
+        px(2, 1, 7, 2, '#b0b0b0');    // Spear/Rifle
+        px(-3, -3, 6, 6, hatCol);     // Turban
       }
       ctx.restore();
-
-      if (e.hp < e.maxHp) {
-        ctx.fillStyle = '#000'; ctx.fillRect(e.x - 18, e.y - e.radius - 12, 36, 5);
-        ctx.fillStyle = '#ff3333'; ctx.fillRect(e.x - 18, e.y - e.radius - 12, 36 * (e.hp / e.maxHp), 5);
+    }
+    function collideWall(cx, cy, r) {
+      for (const w of walls) {
+        const kx = Math.max(w.x, Math.min(cx, w.x + w.w));
+        const ky = Math.max(w.y, Math.min(cy, w.y + w.h));
+        if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
       }
-    }
-    function circleRectCollide(cx, cy, cr, rx, ry, rw, rh) {
-      const closestX = Math.max(rx, Math.min(cx, rx + rw));
-      const closestY = Math.max(ry, Math.min(cy, ry + rh));
-      const dx = cx - closestX, dy = cy - closestY;
-      return (dx * dx + dy * dy) < (cr * cr);
+      if (throneDoor.locked) {
+        const kx = Math.max(throneDoor.x, Math.min(cx, throneDoor.x + throneDoor.w));
+        const ky = Math.max(throneDoor.y, Math.min(cy, throneDoor.y + throneDoor.h));
+        if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
+      }
+      return false;
     }
 
-    let lastTime = performance.now();
+    let last = performance.now();
     function loop(now) {
-      const dt = Math.min((now - lastTime) / 1000, 0.05);
-      lastTime = now;
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
 
-      if (gameRunning && player.hp > 0) {
+      if (!paused && !activeDialogue && player.hp > 0) {
+        if (player.fireCooldown > 0) player.fireCooldown -= dt;
+        if (player.reloading > 0) {
+          player.reloading -= dt;
+          if (player.reloading <= 0) { player.ammo = player.maxAmmo; sfx(420, 620, 'sine', 0.08); }
+        }
+
+        if (player.alerted) {
+          player.alarmTimer -= dt;
+          if (player.alarmTimer <= 0) player.alerted = false;
+        }
+
+        // Sneak vs Run Speed
+        const sneaking = keys['ShiftLeft'] || keys['ShiftRight'];
+        const spd = sneaking ? 135 : 240;
         let dx = 0, dy = 0;
         if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
         if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
         if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
         if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
-        if (dx !== 0 && dy !== 0) { dx *= 0.7071; dy *= 0.7071; }
+        if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
 
-        const nextX = player.x + dx * player.speed * dt;
-        const nextY = player.y + dy * player.speed * dt;
-
-        let blockX = false, blockY = false;
-        for (const w of walls) {
-          if (circleRectCollide(nextX, player.y, player.radius, w.x, w.y, w.w, w.h)) blockX = true;
-          if (circleRectCollide(player.x, nextY, player.radius, w.x, w.y, w.w, w.h)) blockY = true;
-        }
-        for (const p of pillars) {
-          if (Math.hypot(nextX - p.x, player.y - p.y) < player.radius + p.r) blockX = true;
-          if (Math.hypot(player.x - p.x, nextY - p.y) < player.radius + p.r) blockY = true;
-        }
-        if (!blockX) player.x = nextX;
-        if (!blockY) player.y = nextY;
-
-        if (player.recoil > 0) player.recoil = Math.max(0, player.recoil - dt * 40);
+        if (!collideWall(player.x + dx * spd * dt, player.y, player.r)) player.x += dx * spd * dt;
+        if (!collideWall(player.x, player.y + dy * spd * dt, player.r)) player.y += dy * spd * dt;
 
         const camX = player.x - canvas.width / 2;
         const camY = player.y - canvas.height / 2;
         player.angle = Math.atan2((mouse.y + camY) - player.y, (mouse.x + camX) - player.x);
 
-        const actEl = document.getElementById('act');
-        if (player.y > 1850) actEl.textContent = "1 - OUTER COURTYARD";
-        else if (player.y > 1150) actEl.textContent = "2 - HALL OF MIRRORS";
-        else if (player.y > 550) actEl.textContent = "3 - ROYAL MENAGERIE";
-        else actEl.textContent = "4 - PEACOCK THRONE ROOM";
-
-        for (const t of triggers) {
-          if (!t.fired && player.y < t.y) { t.fired = true; say(t.speaker, t.text); }
-        }
-
-        for (const item of pickups) {
-          if (!item.collected && Math.hypot(player.x - item.x, player.y - item.y) < 32) {
-            item.collected = true;
-            player.hp = Math.min(100, player.hp + 35);
-            document.getElementById('hp').textContent = player.hp;
-            playSound(440, 880, 'sine', 0.15);
-            say("HQ", "You found pistachio baklava! +35 HP. Command is officially jealous.");
-          }
-        }
-
-        for (const e of enemies) {
-          if (e.hitFlash > 0) e.hitFlash -= dt;
-          if (Math.hypot(player.x - e.x, player.y - e.y) < 460) {
-            e.angle = Math.atan2(player.y - e.y, player.x - e.x);
-            e.cooldown -= dt;
-            if (e.cooldown <= 0) {
-              e.cooldown = e.type === 'boss' ? 0.85 : 1.7;
-              playSound(220, 80, 'square', 0.08);
-              bullets.push({
-                x: e.x + Math.cos(e.angle) * (e.radius + 8),
-                y: e.y + Math.sin(e.angle) * (e.radius + 8),
-                vx: Math.cos(e.angle) * 380, vy: Math.sin(e.angle) * 380,
-                fromPlayer: false, life: 2.0
-              });
+        // Story Item Pickups
+        for (const it of items) {
+          if (!it.taken && Math.hypot(player.x - it.x, player.y - it.y) < 34) {
+            it.taken = true;
+            sfx(500, 900, 'triangle', 0.14);
+            if (it.type === 'keycard') {
+              player.hasKeycard = true;
+              document.getElementById('objText').textContent = "Unlock Throne Gate [Press E]";
+              queueDialogue([{ name: 'HQ', portrait: 'HQ', text: "Nice! You swiped the Gold Keycard off the breakroom table. Head north to the Throne Room!" }]);
+            } else if (it.type === 'baklava') {
+              player.hp = Math.min(100, player.hp + 40);
+              queueDialogue([{ name: 'GHOST-7', portrait: 'HQ', text: "Mmm, honey pistachio baklava. +40 HP." }]);
+            } else if (it.type === 'intel') {
+              player.intelCount += 1;
+              const logs = [
+                "EMPEROR'S DIARY #1: 'Dear Diary, the guards asked for dental insurance again. I told them to chew softer pistachios.'",
+                "EMPEROR'S DIARY #2: 'Note to self: Do NOT leave the Throne Room Gold Keycard next to the toaster again.'",
+                "EMPEROR'S DIARY #3: 'My Golden Peacock Mech only runs on AAA batteries. I hope nobody brings a silenced pistol.'"
+              ];
+              queueDialogue([{ name: 'STOLEN INTEL', portrait: 'XERXES', text: logs[player.intelCount - 1] }]);
             }
           }
         }
 
+        // Guard Patrol, Vision Cone & Combat AI
+        const sightRange = settings.diff === 'ghost' ? 360 : (settings.diff === 'casual' ? 230 : 290);
+        for (const g of guards) {
+          if (g.flash > 0) g.flash -= dt;
+          const dist = Math.hypot(player.x - g.x, player.y - g.y);
+          const angleToP = Math.atan2(player.y - g.y, player.x - g.x);
+          let diff = Math.abs(angleToP - g.angle);
+          if (diff > Math.PI) diff = 2 * Math.PI - diff;
+
+          // Vision Cone Detection
+          if (dist < sightRange && diff < 0.55) triggerAlarm(g);
+
+          if (player.alerted && dist < 480) {
+            g.angle = angleToP;
+            g.shootCd -= dt;
+            if (g.shootCd <= 0) {
+              g.shootCd = g.role === 'boss' ? 0.9 : 1.8;
+              sfx(210, 90, 'square', 0.08);
+              bullets.push({
+                x: g.x + Math.cos(g.angle) * (g.r + 6),
+                y: g.y + Math.sin(g.angle) * (g.r + 6),
+                vx: Math.cos(g.angle) * 350, vy: Math.sin(g.angle) * 350,
+                fromPlayer: false, life: 1.8
+              });
+            }
+          } else {
+            // Patrol between A and B
+            const tx = g.toB ? g.bx : g.ax;
+            const ty = g.toB ? g.by : g.ay;
+            if (Math.hypot(tx - g.x, ty - g.y) < 10) g.toB = !g.toB;
+            else {
+              g.angle = Math.atan2(ty - g.y, tx - g.x);
+              g.x += Math.cos(g.angle) * 75 * dt;
+              g.y += Math.sin(g.angle) * 75 * dt;
+            }
+          }
+        }
+
+        // Update Bullets
         for (let i = bullets.length - 1; i >= 0; i--) {
           const b = bullets[i];
           b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
-          let remove = b.life <= 0;
-          for (const w of walls) {
-            if (b.x > w.x && b.x < w.x + w.w && b.y > w.y && b.y < w.y + w.h) remove = true;
-          }
-          for (const p of pillars) {
-            if (Math.hypot(b.x - p.x, b.y - p.y) < p.r) remove = true;
-          }
+          let hit = b.life <= 0 || collideWall(b.x, b.y, 3);
 
-          if (!remove && b.fromPlayer) {
-            for (let j = enemies.length - 1; j >= 0; j--) {
-              const e = enemies[j];
-              if (Math.hypot(b.x - e.x, b.y - e.y) < e.radius) {
-                e.hp -= 1; e.hitFlash = 0.08; remove = true;
-                if (e.hp <= 0) {
-                  enemies.splice(j, 1);
-                  if (e.type === 'boss') {
-                    say("EMPEROR XERXES IV", "Nooo! My golden peacock suit wasn't even fully charged! Tell my chef... cancel the soufflé... [MISSION COMPLETE]", 10000);
-                  } else {
-                    const quips = ["Guard down! He was two days from retirement.", "Target neutralized. His tunic wasn't even ironed.", "Clean shot, Ghost-7. HQ approves."];
-                    say("HQ", quips[Math.floor(Math.random() * quips.length)], 3200);
+          if (!hit && b.fromPlayer) {
+            for (let j = guards.length - 1; j >= 0; j--) {
+              const g = guards[j];
+              if (Math.hypot(b.x - g.x, b.y - g.y) < g.r) {
+                g.hp -= 1; g.flash = 0.08; hit = true;
+                triggerAlarm(g);
+                if (g.hp <= 0) {
+                  guards.splice(j, 1);
+                  if (g.role === 'boss') {
+                    queueDialogue([
+                      { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "CURSE YOU, GHOST-7! My Golden Peacock Mech is warranty-voided! Tell my chef... burn the omelette..." },
+                      { name: 'HQ', portrait: 'HQ', text: "Target eliminated and pistachio reserves secured! Great work, Ghost-7. Refresh to play again!" }
+                    ]);
                   }
                 }
                 break;
               }
             }
-          } else if (!remove && !b.fromPlayer) {
-            if (Math.hypot(b.x - player.x, b.y - player.y) < player.radius) {
-              player.hp = Math.max(0, player.hp - 12);
-              document.getElementById('hp').textContent = player.hp;
-              remove = true;
-              if (player.hp <= 0) say("HQ", "Ghost-7 is down! Refresh the page to deploy a clone.", 10000);
+          } else if (!hit && !b.fromPlayer && Math.hypot(b.x - player.x, b.y - player.y) < player.r) {
+            player.hp = Math.max(0, player.hp - 15);
+            hit = true;
+            if (player.hp <= 0) {
+              queueDialogue([{ name: 'HQ', portrait: 'HQ', text: "Ghost-7 is down! Remember: sneak behind guards with [E] instead of Rambo-charging! Refresh to retry." }]);
             }
           }
-          if (remove) bullets.splice(i, 1);
+          if (hit) bullets.splice(i, 1);
         }
       }
 
-      document.getElementById('count').textContent = enemies.length;
-      ctx.fillStyle = '#1a120b'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // Sync HUD
+      document.getElementById('hp').textContent = player.hp;
+      document.getElementById('ammo').textContent = player.ammo;
+      document.getElementById('intel').textContent = player.intelCount;
+      document.getElementById('reloadTag').textContent = player.reloading > 0 ? '[RELOADING...]' : '';
+      const stEl = document.getElementById('stealthState');
+      stEl.textContent = player.alerted ? `ALERT (${Math.ceil(player.alarmTimer)}s)` : 'HIDDEN';
+      stEl.style.color = player.alerted ? '#ff6b6b' : '#5efc82';
+
+      // Render Pixel World
+      ctx.fillStyle = '#141013';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.save();
-      ctx.translate(canvas.width / 2 - player.x, canvas.height / 2 - player.y);
+      ctx.translate(Math.round(canvas.width / 2 - player.x), Math.round(canvas.height / 2 - player.y));
 
-      ctx.fillStyle = '#d9a05b'; ctx.fillRect(0, 0, WORLD_W, WORLD_H);
-      ctx.strokeStyle = 'rgba(139, 90, 43, 0.25)'; ctx.lineWidth = 2;
-      for (let x = 0; x < WORLD_W; x += 80) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, WORLD_H); ctx.stroke(); }
-      for (let y = 0; y < WORLD_H; y += 80) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(WORLD_W, y); ctx.stroke(); }
-
-      ctx.fillStyle = '#8b1e24'; ctx.fillRect(WORLD_W / 2 - 90, 120, 180, WORLD_H - 240);
-      ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 5; ctx.strokeRect(WORLD_W / 2 - 80, 130, 160, WORLD_H - 260);
-
-      for (const item of pickups) {
-        if (!item.collected) {
-          ctx.fillStyle = '#ffd700'; ctx.fillRect(item.x - 14, item.y - 10, 28, 20);
-          ctx.fillStyle = '#7cb342'; ctx.fillRect(item.x - 9, item.y - 6, 18, 12);
+      // Pixel Sandstone Tiles
+      ctx.fillStyle = '#d49b54';
+      ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+      ctx.fillStyle = '#c28840';
+      for (let y = 0; y < WORLD_H; y += 64) {
+        for (let x = (y % 128 === 0 ? 0 : 64); x < WORLD_W; x += 128) {
+          ctx.fillRect(x, y, 64, 64);
         }
       }
+
+      // Royal Red Carpet
+      ctx.fillStyle = '#8b1e24';
+      ctx.fillRect(550, 120, 180, WORLD_H - 220);
+      ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 4;
+      ctx.strokeRect(556, 126, 168, WORLD_H - 232);
+
+      // Vision Cones
+      if (settings.cones) {
+        const range = settings.diff === 'ghost' ? 360 : (settings.diff === 'casual' ? 230 : 290);
+        for (const g of guards) {
+          ctx.fillStyle = player.alerted ? 'rgba(255, 70, 70, 0.22)' : 'rgba(244, 211, 94, 0.20)';
+          ctx.beginPath();
+          ctx.moveTo(g.x, g.y);
+          ctx.arc(g.x, g.y, range, g.angle - 0.55, g.angle + 0.55);
+          ctx.closePath();
+          ctx.fill();
+        }
+      }
+
+      // Items
+      for (const it of items) {
+        if (it.taken) continue;
+        ctx.fillStyle = '#0d0a0e'; ctx.fillRect(it.x - 14, it.y - 10, 28, 20);
+        ctx.fillStyle = it.type === 'keycard' ? '#f4d35e' : (it.type === 'baklava' ? '#5efc82' : '#4ea8de');
+        ctx.fillRect(it.x - 11, it.y - 7, 22, 14);
+      }
+
+      // Walls & Locked Gate
       for (const w of walls) {
         ctx.fillStyle = '#1d4e89'; ctx.fillRect(w.x, w.y, w.w, w.h);
-        ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 3; ctx.strokeRect(w.x, w.y, w.w, w.h);
+        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 4; ctx.strokeRect(w.x, w.y, w.w, w.h);
       }
-      for (const p of pillars) {
-        ctx.fillStyle = '#1d4e89'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 4; ctx.stroke();
+      if (throneDoor.locked) {
+        ctx.fillStyle = '#f4d35e'; ctx.fillRect(throneDoor.x, throneDoor.y, throneDoor.w, throneDoor.h);
+        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 4; ctx.strokeRect(throneDoor.x, throneDoor.y, throneDoor.w, throneDoor.h);
       }
 
-      for (const e of enemies) drawEnemyModel(e);
-      drawPlayerModel(player);
+      // Characters & Projectiles
+      for (const g of guards) drawPixelChar(g.x, g.y, g.angle, g.role, g.flash);
+      drawPixelChar(player.x, player.y, player.angle, 'player', 0);
+
       for (const b of bullets) {
-        ctx.fillStyle = b.fromPlayer ? '#00ff66' : '#ff4444';
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.fromPlayer ? 4 : 5, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = b.fromPlayer ? '#5efc82' : '#ff4d4d';
+        ctx.fillRect(Math.round(b.x - 4), Math.round(b.y - 4), 8, 8);
       }
 
       ctx.restore();
