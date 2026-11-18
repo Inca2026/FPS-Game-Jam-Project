@@ -151,7 +151,7 @@ let paused = true, gameStarted = false, currentMission = 0, onChopperRoof = fals
 const foundSecretIds = new Set();
 
 const player = {
-  x: 240, y: 240, r: 16, angle: 0, hp: 100, ammo: 8, fireCd: 0, reloading: 0,
+  x: 240, y: 270, r: 16, angle: 0, hp: 100, ammo: 8, fireCd: 0, reloading: 0,
   hasKeycard: false, alerted: false, alarmTimer: 0, meleeSwing: 0, muzzleFlash: 0,
   walkCycle: 0, hiddenInBasket: false, disguised: false, civilian: false, printerFixed: false, reportsDone: false
 };
@@ -175,9 +175,10 @@ function loadMission(num) {
   loadout.gadgetCount = 2;
 
   if (num === 4) {
-    mapData = MISSIONS_PERSIA[4];
-    document.getElementById('missionTitle').textContent = mapData.title;
-    document.getElementById('objText').textContent = mapData.obj;
+    const ch4 = MISSIONS_PERSIA[4];
+    mapData = ch4;
+    document.getElementById('missionTitle').textContent = ch4.title;
+    document.getElementById('objText').textContent = ch4.obj;
     player.x = 380; player.y = 310;
     walls = [
       { x: 220, y: 180, w: 360, h: 24 }, { x: 220, y: 420, w: 360, h: 24 },
@@ -473,17 +474,21 @@ function draw25DProp(p) {
 }
 function collideWall(cx, cy, r) {
   if (onChopperRoof) return cx < 235 || cx > 565 || cy < 195 || cy > 425;
-  for (const w of walls) {
-    const kx = Math.max(w.x, Math.min(cx, w.x + w.w)), ky = Math.max(w.y, Math.min(cy, w.y + w.h));
-    if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
-  }
-  for (const p of props) {
-    if (p.type === 'table' || p.type === 'crate') {
-      const kx = Math.max(p.x, Math.min(cx, p.x + p.w)), ky = Math.max(p.y, Math.min(cy, p.y + p.h));
-      if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
+  const hitAt = (px, py) => {
+    for (const w of walls) {
+      const kx = Math.max(w.x, Math.min(px, w.x + w.w)), ky = Math.max(w.y, Math.min(py, w.y + w.h));
+      if ((px - kx) ** 2 + (py - ky) ** 2 < r * r) return true;
     }
-  }
-  return false;
+    for (const p of props) {
+      if (p.type === 'table' || p.type === 'crate') {
+        const kx = Math.max(p.x, Math.min(px, p.x + p.w)), ky = Math.max(p.y, Math.min(py, p.y + p.h));
+        if ((px - kx) ** 2 + (py - ky) ** 2 < r * r) return true;
+      }
+    }
+    return false;
+  };
+  if (hitAt(player.x, player.y)) return false;
+  return hitAt(cx, cy);
 }
 
 let last = performance.now();
