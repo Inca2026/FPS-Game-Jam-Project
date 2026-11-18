@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Operation: Peacock Down — Full Campaign</title>
+  <title>Operation: Peacock Down — Full Story Campaign</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -10,82 +10,83 @@
     <div class="panel pixel-box">
       <div class="badge">2.5D PIXEL STEALTH-COMEDY</div>
       <h1>OPERATION: PEACOCK DOWN</h1>
-      <p class="briefing">
-        <strong>YOUR STORY:</strong> Last Tuesday you were a mild-mannered cubicle accountant in Toledo, Ohio. Then black-ops agents threw a burlap sack over your head, handed you a tactical spatula, and drafted you to stop Persian Emperor Xerxes IV from monopolizing the world's pistachios.
-      </p>
-      <div class="btn-row">
-        <button class="btn primary" id="playBtn">START CAMPAIGN</button>
-        <button class="btn" id="missionSelectBtn">MISSION SELECT (8 STAGES)</button>
+      <p class="subtitle">From Cubicle Slave to Secret Stealth Operative</p>
+      <div class="briefing-card">
+        <strong>PROLOGUE LOG:</strong> You are Arthur Pendelton, a data-entry clerk whose biggest worry is fixing the office printer—until a black van kidnaps you to stop Emperor Xerxes IV's global pistachio monopoly.
+      </div>
+      <div class="btn-group">
+        <button class="btn primary" id="playBtn">PLAY FULL STORY (MISSION 0)</button>
+        <button class="btn" id="missionSelectBtn">CHAPTER SELECT (8 MISSIONS)</button>
         <button class="btn" id="openSettingsBtn">SETTINGS</button>
       </div>
     </div>
   </div>
 
   <div id="missionScreen" class="screen" style="display:none;">
-    <div class="panel pixel-box wide">
-      <h1>SELECT MISSION</h1>
-      <p class="sub">Train in the USA, track the Emperor's coordinates, and fly to Persia:</p>
-      <div class="mission-grid">
-        <button class="btn" onclick="startAtMission(0)">0. PROLOGUE: Blackhawk Chopper</button>
-        <button class="btn" onclick="startAtMission(1)">1. USA: Area 51 Cardboard Box Course</button>
-        <button class="btn" onclick="startAtMission(2)">2. USA: Pentagon Breakroom Heist</button>
-        <button class="btn" onclick="startAtMission(3)">3. USA: Langley Satellite Relay</button>
-        <button class="btn" onclick="startAtMission(4)">4. USA: Andrews Airbase Runway</button>
-        <button class="btn gold" onclick="startAtMission(5)">5. PERSIA: Outer Courtyard (90% Done)</button>
-        <button class="btn gold" onclick="startAtMission(6)">6. PERSIA: Royal Kitchens (95% Done)</button>
-        <button class="btn gold" onclick="startAtMission(7)">7. FINALE: Peacock Throne Room</button>
+    <div class="panel pixel-box">
+      <h1>CHAPTER SELECT</h1>
+      <p style="font-size:12px; color:#ccc; margin-bottom:10px;">Jump to any chapter in Arthur's journey:</p>
+      <div class="chapter-grid">
+        <button class="btn" onclick="startAtMission(0)">CH 0: MegaCorp Day Job (USA)</button>
+        <button class="btn" onclick="startAtMission(1)">CH 1: The Alley Kidnapping (USA)</button>
+        <button class="btn" onclick="startAtMission(2)">CH 2: Area-52 Stealth Training (USA)</button>
+        <button class="btn" onclick="startAtMission(3)">CH 3: Langley Intel Heist (USA)</button>
+        <button class="btn" onclick="startAtMission(4)">CH 4: Blackhawk Chopper (En Route)</button>
+        <button class="btn" onclick="startAtMission(5)">CH 5: Palace Outer Courtyard (Persia)</button>
+        <button class="btn" onclick="startAtMission(6)">CH 6: Royal Kitchens (Persia)</button>
+        <button class="btn" onclick="startAtMission(7)">CH 7 (FINALE): Peacock Throne</button>
       </div>
-      <button class="btn" id="backFromMissionBtn">BACK</button>
+      <button class="btn" id="backFromMissionBtn" style="margin-top:12px;">BACK TO TITLE</button>
     </div>
   </div>
 
   <div id="loadoutScreen" class="screen" style="display:none;">
     <div class="panel pixel-box">
-      <h1>ARMORY CRATE — CUSTOMIZE GEAR</h1>
+      <h1>TACTICAL ARMORY</h1>
       <div class="setting-row">
-        <span><strong>[1] Primary Firearm:</strong></span>
+        <span><strong>[Slot 1] Firearm:</strong></span>
         <select id="pickPrimary">
           <option value="pistol">Silenced PPK (8 rds | Quiet)</option>
-          <option value="smg">Tactical MP5 (18 rds | Fast)</option>
-          <option value="shotgun">Breacher 12G (4 rds | Spread)</option>
+          <option value="smg">Tactical MP5 (18 rds | Burst)</option>
+          <option value="shotgun">Breacher 12G (4 rds | Heavy)</option>
         </select>
       </div>
       <div class="setting-row">
-        <span><strong>[2] Melee:</strong></span>
+        <span><strong>[Slot 2] Melee:</strong></span>
         <span style="color:#f4d35e;">Tactical Spatula (Silent Takedown)</span>
       </div>
       <div class="setting-row">
-        <span><strong>[3] Tactical Gadget:</strong></span>
+        <span><strong>[Slot 3] Gadget:</strong></span>
         <select id="pickGadget">
           <option value="rug">Mini Persian Rug (Stuns 4s)</option>
-          <option value="coin">Pistachio Coin (Lures Guards)</option>
+          <option value="coin">Brass Pistachio Coin (Lures)</option>
         </select>
       </div>
-      <button class="btn primary" id="saveLoadoutBtn">EQUIP LOADOUT</button>
+      <button class="btn primary" id="saveLoadoutBtn">EQUIP & CLOSE</button>
     </div>
   </div>
 
   <div id="settingsScreen" class="screen" style="display:none;">
     <div class="panel pixel-box">
-      <h1>MISSION SETTINGS</h1>
+      <h1>GAME SETTINGS</h1>
       <div class="setting-row">
-        <span>Retro Synth Audio</span>
+        <span>Retro Synth Sound Effects</span>
         <input type="checkbox" id="optSound" checked />
       </div>
       <div class="setting-row">
         <span>Difficulty</span>
         <select id="optDiff">
-          <option value="casual">Cadet (Forgiving Vision)</option>
+          <option value="casual">Intern (Easy Stealth)</option>
           <option value="agent" selected>Agent (Balanced)</option>
           <option value="ghost">Ghost (Lethal Vision)</option>
         </select>
       </div>
       <div class="setting-row">
-        <span>Show Vision Cones</span>
+        <span>Show Enemy Vision Cones</span>
         <input type="checkbox" id="optCones" checked />
       </div>
-      <p class="controls-hint">
-        WASD Move | Shift Sneak | 1-4 Gear | Click Shoot/Use | R Reload | E Interact/Hide/Disguise | F Next Dialogue
+      <p style="font-size:11px; color:#aaa; margin-top:10px;">
+        WASD Move | Shift Sneak | 1-4 Hotbar | Click Shoot/Use | R Reload | E Interact/Hide | F Next Line
       </p>
       <button class="btn primary" id="closeSettingsBtn">RESUME</button>
     </div>
@@ -94,36 +95,38 @@
   <button id="menuBtn">MENU [ESC]</button>
 
   <div id="hud" class="pixel-box">
-    <div id="missionTitle" class="hud-title">PROLOGUE: BLACKHAWK CHOPPER</div>
-    <div class="bar-wrap"><div id="hpBar" class="bar-fill"></div><span id="hpText">HP: 100%</span></div>
+    <div class="hud-top"><strong id="missionTitle">CH 0: MEGACORP LOGISTICS</strong></div>
     <div class="hud-stats">
-      <span id="stealthState" class="tag-hidden">HIDDEN</span>
-      <span>AMMO: <strong id="ammo">8/8</strong></span>
-      <span>SPINNERS: <strong id="secretsHud">0/8</strong></span>
+      <span>HP: <strong id="hp">100</strong>%</span> |
+      <span id="stealthState" style="color:#5efc82;">CIVILIAN</span> |
+      <span>AMMO: <strong id="ammo">0/0</strong></span> |
+      <span>T-POSE SECRETS: <strong id="secretsHud" style="color:#f4d35e;">0/8</strong></span>
     </div>
-    <div class="hud-obj">OBJ: <span id="objText">Check Armory [E]</span></div>
+    <div class="hud-obj">OBJ: <span id="objText">Finish your TPS reports at your desk [E]</span></div>
   </div>
 
   <div id="hotbar">
-    <div class="slot active" id="slot1"> SILENCED PPK</div>
-    <div class="slot" id="slot2"> TAC-SPATULA</div>
-    <div class="slot" id="slot3"> PERSIAN RUG</div>
-    <div class="slot" id="slot4"> BAKLAVA (x1)</div>
+    <div class="slot active" id="slot1"> UNARMED</div>
+    <div class="slot" id="slot2"> STAPLER / SPATULA</div>
+    <div class="slot" id="slot3"> GADGET</div>
+    <div class="slot" id="slot4"> SNACK (x1)</div>
   </div>
 
   <div id="dialogueWrap" class="pixel-box">
     <canvas id="portrait" width="16" height="16"></canvas>
-    <div id="dialogueText">
-      <div id="speakerName">HQ</div>
+    <div id="dialogueBody">
+      <div id="speakerName">BOSS</div>
       <div id="speakerLine">...</div>
-      <div id="dialogueHint">[Press F or Click Box to Continue]</div>
+      <div id="dialogueChoices"></div>
+      <div id="dialogueHint">[Press F or Click to Continue]</div>
     </div>
   </div>
 
   <canvas id="game"></canvas>
 
   <script src="dialogue.js"></script>
-  <script src="missions.js"></script>
+  <script src="missions_usa.js"></script>
+  <script src="missions_persia.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
