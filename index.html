@@ -2,26 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Operation: Peacock Down — 2.5D Pixel Tactical</title>
+  <title>Operation: Peacock Down — Extended Edition</title>
   <style>
     * { box-sizing: border-box; image-rendering: pixelated; }
     body {
       margin: 0; overflow: hidden; background: #120e14;
       font-family: 'Courier New', monospace; user-select: none; color: #f4f4f4;
-      cursor: none;
+      cursor: crosshair;
     }
-    canvas { display: block; }
+    canvas { display: block; cursor: crosshair; }
     .pixel-box {
       background: #221c24; border: 4px solid #f4d35e;
       box-shadow: 0 0 0 4px #0d0a0e, inset 0 0 0 3px #3b303f;
     }
     #hud {
       position: fixed; top: 12px; left: 12px; padding: 10px 14px;
-      font-size: 13px; line-height: 1.5; z-index: 5; min-width: 290px;
+      font-size: 13px; line-height: 1.5; z-index: 5; min-width: 310px;
     }
     #menuBtn {
       position: fixed; top: 12px; right: 12px; padding: 8px 14px;
-      font-family: inherit; font-weight: bold; cursor: none; z-index: 6;
+      font-family: inherit; font-weight: bold; cursor: pointer; z-index: 6;
       background: #f4d35e; color: #141013; border: 3px solid #0d0a0e;
     }
     #hotbar {
@@ -29,7 +29,7 @@
       display: flex; gap: 8px; z-index: 6;
     }
     .slot {
-      width: 112px; padding: 8px 6px; text-align: center; font-size: 11px;
+      width: 120px; padding: 8px 6px; text-align: center; font-size: 11px;
       background: #1a151c; border: 3px solid #554759; color: #bbb;
     }
     .slot.active {
@@ -39,7 +39,7 @@
     #dialogueWrap {
       position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
       width: 82%; max-width: 780px; display: none; z-index: 8;
-      padding: 12px; gap: 14px; align-items: center;
+      padding: 12px; gap: 14px; align-items: center; cursor: pointer;
     }
     #portrait {
       width: 72px; height: 72px; border: 3px solid #0d0a0e;
@@ -53,12 +53,12 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 20; padding: 20px; text-align: center;
     }
-    .panel { padding: 22px 28px; max-width: 580px; width: 100%; }
+    .panel { padding: 22px 28px; max-width: 600px; width: 100%; }
     h1 { color: #f4d35e; margin: 0 0 8px; font-size: 24px; letter-spacing: 2px; }
     .btn {
-      display: inline-block; margin: 8px 6px; padding: 10px 20px;
-      font-family: inherit; font-size: 14px; font-weight: bold;
-      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e; cursor: none;
+      display: inline-block; margin: 6px 5px; padding: 10px 18px;
+      font-family: inherit; font-size: 13px; font-weight: bold;
+      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e; cursor: pointer;
     }
     .btn:hover { background: #ffe680; }
     .setting-row {
@@ -71,19 +71,33 @@
   <div id="titleScreen" class="screen">
     <div class="panel pixel-box">
       <h1>OPERATION: PEACOCK DOWN</h1>
-      <p style="color:#5efc82; font-size:13px; margin:0 0 12px;">3-MISSION CAMPAIGN | 2.5D PIXEL TACTICAL</p>
+      <p style="color:#5efc82; font-size:13px; margin:0 0 12px;">EXTENDED EDITION | 2.5D PIXEL STEALTH-ACTION</p>
       <p style="font-size:13px; line-height:1.5; text-align:left; background:#141013; padding:10px; border:2px solid #3b303f;">
-        <strong>MISSION 0 — CHOPPER BRIEFING:</strong> Customize your loadout at the Gun Rack inside the Blackhawk, talk to your squad, and rope down into the 3-mission campaign ending at Emperor Xerxes IV's Throne Room.
+        <strong>BRIEFING:</strong> Emperor Xerxes IV has hijacked the world's pistachio supply to fuel his Golden Peacock Mech. Customize your gear in the Blackhawk, sneak via laundry baskets and guard disguises, uncover hidden pistachio relics, and crash his royal brunch!
       </p>
-      <button class="btn" id="playBtn">BOARD HELICOPTER</button>
+      <button class="btn" id="playBtn">START CAMPAIGN (CHOPPER)</button>
+      <button class="btn" id="missionSelectBtn">MISSION SELECT</button>
       <button class="btn" id="openSettingsBtn">SETTINGS</button>
+    </div>
+  </div>
+
+  <div id="missionScreen" class="screen" style="display:none;">
+    <div class="panel pixel-box">
+      <h1>SELECT DEPLOYMENT</h1>
+      <p style="font-size:12px; color:#ccc;">Jump directly into any stage of Operation: Peacock Down:</p>
+      <div style="display:flex; flex-direction:column; gap:8px; margin:14px 0;">
+        <button class="btn" onclick="startAtMission(0)">PROLOGUE: Blackhawk Helicopter (Loadout & Secret)</button>
+        <button class="btn" onclick="startAtMission(1)">MISSION 1: The Outer Courtyard (Stealth & Keycard)</button>
+        <button class="btn" onclick="startAtMission(2)">MISSION 2: Royal Kitchens (Disguises & Chef Sabotage)</button>
+        <button class="btn" onclick="startAtMission(3)">MISSION 3 (FINAL): The Peacock Throne Room</button>
+      </div>
+      <button class="btn" id="backFromMissionBtn">BACK</button>
     </div>
   </div>
 
   <div id="loadoutScreen" class="screen" style="display:none;">
     <div class="panel pixel-box">
       <h1>CHOPPER ARMORY — CUSTOMIZE LOADOUT</h1>
-      <p style="font-size:12px; color:#ccc;">Pick your Primary Weapon [Slot 1] and Tactical Gadget [Slot 3]:</p>
       <div class="setting-row">
         <span><strong>[Slot 1] Primary Firearm:</strong></span>
         <select id="pickPrimary" style="font-family:inherit; padding:5px;">
@@ -131,7 +145,7 @@
         <input type="checkbox" id="optCones" checked />
       </div>
       <p style="font-size:11px; color:#aaa; margin-top:12px;">
-        WASD Move | Shift Sneak | 1-4 Switch Gear | Click Use/Shoot | R Reload | E Interact/Backstab | F Next Dialogue
+        WASD Move | Shift Sneak | 1-4 Switch Gear | Click Use/Shoot | R Reload | E Interact/Hide/Disguise | F Next Dialogue
       </p>
       <button class="btn" id="closeSettingsBtn">RESUME</button>
     </div>
@@ -142,7 +156,7 @@
   <div id="hud" class="pixel-box">
     <div><strong id="missionTitle">PROLOGUE: BLACKHAWK CHOPPER</strong></div>
     <div>HP: <span id="hp">100</span>% | <span id="stealthState" style="color:#5efc82;">HIDDEN</span> | AMMO: <span id="ammo">8/8</span></div>
-    <div>OBJ: <span id="objText" style="color:#f4d35e;">Check Gun Rack [E] & Fast-Rope [E]</span></div>
+    <div>SECRETS: <span id="secretsHud" style="color:#f4d35e;">0/4</span> | OBJ: <span id="objText" style="color:#f4d35e;">Check Armory [E]</span></div>
   </div>
 
   <div id="hotbar">
@@ -157,7 +171,7 @@
     <div id="dialogueText">
       <div id="speakerName">HQ</div>
       <div id="speakerLine">...</div>
-      <div id="dialogueHint">[Press F or Click Dialogue to Advance]</div>
+      <div id="dialogueHint">[Press F or Click Box to Continue]</div>
     </div>
   </div>
 
@@ -193,15 +207,14 @@
       o.start(); o.stop(audioCtx.currentTime + dur);
     }
 
-    // Kindergarten-Style Pixel Portraits
     function drawPortrait(who) {
       pCtx.clearRect(0, 0, 16, 16);
-      const bg = { HQ: '#1f3325', PILOT: '#243447', GUARD: '#1b365d', CHEF: '#4a3525', XERXES: '#4a1525' };
+      const bg = { HQ: '#1f3325', PILOT: '#243447', GUARD: '#1b365d', CHEF: '#4a3525', XERXES: '#4a1525', SPINNER: '#3d1e6d' };
       pCtx.fillStyle = bg[who] || '#222';
       pCtx.fillRect(0, 0, 16, 16);
 
       pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(3, 2, 10, 12);
-      pCtx.fillStyle = who === 'HQ' || who === 'PILOT' ? '#e0ac69' : '#c68642';
+      pCtx.fillStyle = (who === 'HQ' || who === 'PILOT' || who === 'SPINNER') ? '#e0ac69' : '#c68642';
       pCtx.fillRect(4, 3, 8, 10);
 
       if (who === 'HQ') {
@@ -212,6 +225,11 @@
         pCtx.fillStyle = '#111'; pCtx.fillRect(3, 2, 10, 4);
         pCtx.fillStyle = '#5efc82'; pCtx.fillRect(4, 5, 8, 2);
         pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 1);
+      } else if (who === 'SPINNER') {
+        pCtx.fillStyle = '#ff6b6b'; pCtx.fillRect(4, 1, 8, 2); // Propeller beanie
+        pCtx.fillStyle = '#fff'; pCtx.fillRect(4, 5, 3, 3); pCtx.fillRect(9, 5, 3, 3); // Dizzy eyes
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 1, 1); pCtx.fillRect(10, 6, 1, 1);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 3); // Huge grin
       } else if (who === 'CHEF') {
         pCtx.fillStyle = '#ffffff'; pCtx.fillRect(3, 0, 10, 4);
         pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2);
@@ -251,7 +269,14 @@
     }
     dWrap.addEventListener('click', nextDialogue);
 
-    // Loadout System
+    const spatulaKills = [
+      "Bonk! Right in the ceremonial turban. That's what happens when you skip helmet day.",
+      "Silent spatula takedown! Somewhere, a short-order cook sheds a single proud tear.",
+      "Night-night! Honestly, he looked like he needed a nap anyway.",
+      "Thwack! Non-stick tactical cookware claims another victim.",
+      "Lights out! Remind me to sanitize this spatula before we hit the breakroom."
+    ];
+
     const loadout = {
       slot: 1,
       primary: 'pistol',
@@ -280,33 +305,49 @@
     }
     let paused = true;
     let gameStarted = false;
-    let currentMission = 0; // 0 = Chopper, 1 = Courtyard, 2 = Royal Kitchens, 3 = Throne Room
+    let currentMission = 0; // 0 = Chopper, 1 = Courtyard, 2 = Kitchens, 3 = Throne Room
+    let onChopperRoof = false;
     let rotorAngle = 0;
+    let secretsFound = 0;
+    const foundSecretIds = new Set();
 
     const player = {
-      x: 400, y: 320, r: 16, angle: 0,
+      x: 400, y: 310, r: 16, angle: 0,
       hp: 100, ammo: 8, fireCd: 0, reloading: 0,
-      hasKeycard: false, alerted: false, alarmTimer: 0, meleeSwing: 0
+      hasKeycard: false, alerted: false, alarmTimer: 0,
+      meleeSwing: 0, muzzleFlash: 0, walkCycle: 0,
+      hiddenInBasket: false, disguised: false
     };
 
     let walls = [];
-    let props = []; // 2.5D Tables, Rugs, Palms, Crates, Helicopter Parts
+    let props = [];
     let guards = [];
     let interactables = [];
     let bullets = [];
     let thrownGadgets = [];
 
+    window.startAtMission = function(num) {
+      document.getElementById('titleScreen').style.display = 'none';
+      document.getElementById('missionScreen').style.display = 'none';
+      gameStarted = true;
+      paused = false;
+      player.hp = 100;
+      loadMission(num);
+    };
+
     function loadMission(num) {
       currentMission = num;
+      onChopperRoof = false;
       walls = []; props = []; guards = []; interactables = []; bullets = []; thrownGadgets = [];
       player.alerted = false; player.alarmTimer = 0; player.hasKeycard = false;
+      player.hiddenInBasket = false; player.disguised = false;
+      player.ammo = loadout.weapons[loadout.primary].maxAmmo;
       loadout.gadgetCount = 2;
       refreshHotbarLabels();
 
       if (num === 0) {
-        // HELICOPTER HUB
         document.getElementById('missionTitle').textContent = "PROLOGUE: BLACKHAWK CHOPPER";
-        document.getElementById('objText').textContent = "Customize Loadout at Crate [E], then Fast-Rope [E]";
+        document.getElementById('objText').textContent = "Armory [E], Roof Ladder [E], or Fast-Rope [E]";
         player.x = 380; player.y = 310;
         walls = [
           { x: 220, y: 180, w: 360, h: 24 },
@@ -316,22 +357,22 @@
         ];
         props = [
           { type: 'heli_floor', x: 244, y: 204, w: 312, h: 216 },
-          { type: 'crate', x: 270, y: 220, w: 64, h: 44, label: 'ARMORY' },
-          { type: 'table', x: 410, y: 220, w: 80, h: 42, label: 'MAP' },
-          { type: 'rope_hatch', x: 460, y: 340, w: 60, h: 60, label: 'DROP' }
+          { type: 'crate', x: 270, y: 220, w: 64, h: 44 },
+          { type: 'table', x: 400, y: 220, w: 80, h: 42 },
+          { type: 'ladder', x: 260, y: 350, w: 44, h: 44 },
+          { type: 'rope_hatch', x: 470, y: 345, w: 60, h: 60 }
         ];
         interactables = [
-          { type: 'armory', x: 302, y: 242, r: 55 },
-          { type: 'pilot', x: 525, y: 300, r: 55 },
-          { type: 'drop', x: 490, y: 370, r: 55 }
+          { type: 'armory', x: 302, y: 242, r: 55, label: 'ARMORY' },
+          { type: 'roof_ladder', x: 282, y: 372, r: 55, label: 'CLIMB ROOF' },
+          { type: 'pilot', x: 525, y: 295, r: 55, label: 'PILOT' },
+          { type: 'drop', x: 500, y: 375, r: 55, label: 'FAST-ROPE' }
         ];
         queueDialogue([
           { name: 'PILOT DAVE', portrait: 'PILOT', text: "Two minutes out from Tehran Palace, Ghost-7! Don't mind the rattling—duct tape holds the tail rotor together." },
-          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Listen up! Emperor Xerxes IV cornered the global pistachio market to power his Golden Peacock Mech. Walk up to the Armory Crate and press [E] to pick your loadout!" },
-          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "When you're geared up, step onto the Fast-Rope Hatch [E] to begin Mission 1: The Outer Courtyard." }
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Emperor Xerxes IV stole the world's pistachio reserves to power his Golden Peacock Mech. Check the Armory Crate [E] to customize your loadout, or climb the Roof Ladder [E] if you want fresh air!" }
         ]);
       } else if (num === 1) {
-        // MISSION 1: OUTER COURTYARD
         document.getElementById('missionTitle').textContent = "MISSION 1: OUTER COURTYARD";
         document.getElementById('objText').textContent = "Steal Courtyard Gate Key [E] & Reach North Gate";
         player.x = 500; player.y = 1120;
@@ -344,14 +385,19 @@
           { type: 'carpet', x: 420, y: 60, w: 160, h: 1120 },
           { type: 'table', x: 140, y: 860, w: 110, h: 54 },
           { type: 'table', x: 740, y: 740, w: 110, h: 54 },
+          { type: 'basket', x: 340, y: 780, w: 44, h: 44 },
+          { type: 'basket', x: 640, y: 420, w: 44, h: 44 },
           { type: 'palm', x: 120, y: 1080, w: 40, h: 40 },
           { type: 'palm', x: 840, y: 1080, w: 40, h: 40 },
           { type: 'palm', x: 120, y: 460, w: 40, h: 40 },
           { type: 'palm', x: 840, y: 460, w: 40, h: 40 }
         ];
         interactables = [
-          { type: 'keycard', x: 795, y: 765, r: 48, taken: false },
-          { type: 'exit', x: 500, y: 80, r: 65 }
+          { type: 'keycard', x: 795, y: 765, r: 48, taken: false, label: 'GATE KEY' },
+          { type: 'basket_hide', x: 362, y: 802, r: 48, label: 'HIDE' },
+          { type: 'basket_hide', x: 662, y: 442, r: 48, label: 'HIDE' },
+          { type: 'secret_pistachio', id: 'm1_secret', x: 95, y: 110, r: 48, taken: false, label: 'SECRET' },
+          { type: 'exit', x: 500, y: 80, r: 65, label: 'NORTH GATE' }
         ];
         guards = [
           makeGuard(340, 900, 220, 900, 620, 900, 'guard'),
@@ -359,13 +405,12 @@
           makeGuard(500, 320, 300, 320, 700, 320, 'immortal')
         ];
         queueDialogue([
-          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Boots on the ground! Intelligence says Xerxes left the Courtyard Gate Key on a patio table to the east." },
-          { name: 'PALACE GUARD', portrait: 'GUARD', text: "Ugh, third night in a row guarding potted palms. If I see one ninja in night-vision goggles, I'm calling in sick." }
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Boots on the ground! Jump inside wicker Laundry Baskets [E] to hide from patrolling guards, and grab the Gate Key off the east table." },
+          { name: 'PALACE GUARD', portrait: 'GUARD', text: "Ugh, third night guarding potted palms. If I see one guy in green night-vision goggles, I'm pretending I didn't." }
         ]);
       } else if (num === 2) {
-        // MISSION 2: ROYAL KITCHENS & ARCHIVES
         document.getElementById('missionTitle').textContent = "MISSION 2: ROYAL KITCHENS";
-        document.getElementById('objText').textContent = "Interrogate Royal Chef [E] & Reach Throne Lift";
+        document.getElementById('objText').textContent = "Grab Guard Disguise [E], Talk to Chef [E], Reach Lift";
         player.x = 500; player.y = 1120;
         walls = [
           { x: 0, y: 0, w: 1000, h: 40 }, { x: 0, y: 1200, w: 1000, h: 40 },
@@ -377,12 +422,16 @@
           { type: 'table', x: 110, y: 900, w: 120, h: 56 },
           { type: 'table', x: 760, y: 900, w: 120, h: 56 },
           { type: 'table', x: 420, y: 540, w: 160, h: 64 },
+          { type: 'basket', x: 180, y: 640, w: 44, h: 44 },
           { type: 'crate', x: 120, y: 200, w: 64, h: 48 },
           { type: 'crate', x: 810, y: 200, w: 64, h: 48 }
         ];
         interactables = [
-          { type: 'chef', x: 500, y: 510, r: 58, talked: false },
-          { type: 'exit', x: 500, y: 80, r: 65 }
+          { type: 'disguise', x: 170, y: 925, r: 52, taken: false, label: 'DISGUISE' },
+          { type: 'basket_hide', x: 202, y: 662, r: 48, label: 'HIDE' },
+          { type: 'chef', x: 500, y: 510, r: 58, talked: false, label: 'CHEF' },
+          { type: 'secret_pistachio', id: 'm2_secret', x: 900, y: 110, r: 48, taken: false, label: 'SECRET' },
+          { type: 'exit', x: 500, y: 80, r: 65, label: 'THRONE LIFT' }
         ];
         guards = [
           makeGuard(200, 620, 120, 620, 880, 620, 'immortal'),
@@ -390,14 +439,13 @@
           makeGuard(500, 220, 260, 220, 740, 220, 'immortal')
         ];
         queueDialogue([
-          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "You're inside the Royal Kitchens. The Head Chef is standing by the center banquet table—ask him how to bypass the Throne Room's shield!" },
-          { name: 'HEAD CHEF', portrait: 'CHEF', text: "Mamma mia! Who tracks desert sand next to my saffron soufflé?! Come over here if you want the secret!" }
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "You're in the Royal Kitchens! Someone left a spare Guard Uniform on the west table—put it on [E] to blend right past vision cones!" },
+          { name: 'HEAD CHEF', portrait: 'CHEF', text: "Psst! Over here by the center table! I have dirt on Emperor Xerxes's mech!" }
         ]);
       } else if (num === 3) {
-        // MISSION 3 (FINAL): THE PEACOCK THRONE ROOM
         document.getElementById('missionTitle').textContent = "MISSION 3 (FINAL): PEACOCK THRONE";
         document.getElementById('objText').textContent = "Defeat Emperor Xerxes IV!";
-        player.x = 500; player.y = 1080;
+        player.x = 500; player.y: 1080;
         walls = [
           { x: 0, y: 0, w: 1000, h: 40 }, { x: 0, y: 1160, w: 1000, h: 40 },
           { x: 0, y: 0, w: 40, h: 1200 }, { x: 960, y: 0, w: 40, h: 1200 },
@@ -407,8 +455,13 @@
           { type: 'carpet', x: 400, y: 60, w: 200, h: 1080 },
           { type: 'table', x: 110, y: 880, w: 100, h: 52 },
           { type: 'table', x: 790, y: 880, w: 100, h: 52 },
+          { type: 'basket', x: 160, y: 520, w: 44, h: 44 },
           { type: 'palm', x: 120, y: 200, w: 40, h: 40 },
           { type: 'palm', x: 840, y: 200, w: 40, h: 40 }
+        ];
+        interactables = [
+          { type: 'basket_hide', x: 182, y: 542, r: 48, label: 'HIDE' },
+          { type: 'secret_pistachio', id: 'm3_secret', x: 905, y: 1080, r: 48, taken: false, label: 'SECRET' }
         ];
         guards = [
           makeGuard(300, 520, 220, 520, 440, 520, 'immortal'),
@@ -417,8 +470,8 @@
         ];
         queueDialogue([
           { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "SO! You are the budget-cut assassin ruining my Tuesday brunch! Behold my Golden Peacock Exosuit!" },
-          { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Wait... why is the battery light blinking red?! Did the Chef forget to plug it in?! NO MATTER—PREPARE TO BE PECKED!" },
-          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "The Chef sabotaged his battery pack! Take him down, Ghost-7!" }
+          { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Wait... why is the battery blinking at 2%?! Did the Chef unplug my charger?! NO MATTER—PREPARE TO BE PECKED!" },
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "The Chef sabotaged his battery! Finish him off, Ghost-7!" }
         ]);
       }
     }
@@ -429,8 +482,334 @@
         r: role === 'boss' ? 28 : 16,
         hp: role === 'boss' ? 22 : (role === 'immortal' ? 4 : 2),
         maxHp: role === 'boss' ? 22 : (role === 'immortal' ? 4 : 2),
-        angle: Math.PI / 2, shootCd: 1.0, stunTimer: 0, flash: 0
+        angle: Math.PI / 2, shootCd: 1.0, stunTimer: 0, flash: 0, walkCycle: 0
       };
+    }
+    const keys = {};
+    const mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+
+    document.addEventListener('keydown', e => {
+      keys[e.code] = true;
+      if (e.code === 'Digit1') selectSlot(1);
+      if (e.code === 'Digit2') selectSlot(2);
+      if (e.code === 'Digit3') selectSlot(3);
+      if (e.code === 'Digit4') selectSlot(4);
+      if (e.code === 'KeyF' && activeDialogue) nextDialogue();
+      if (e.code === 'KeyR' && !paused && !activeDialogue) {
+        const w = loadout.weapons[loadout.primary];
+        if (player.ammo < w.maxAmmo && player.reloading <= 0) {
+          player.reloading = 1.25;
+          sfx(240, 150, 'triangle', 0.14);
+        }
+      }
+      if ((e.code === 'KeyE' || e.code === 'Space') && !paused && !activeDialogue) handleInteract();
+      if (e.code === 'Escape' && gameStarted) {
+        paused = !paused;
+        document.getElementById('settingsScreen').style.display = paused ? 'flex' : 'none';
+      }
+    });
+    document.addEventListener('keyup', e => keys[e.code] = false);
+    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+    document.getElementById('playBtn').onclick = () => startAtMission(0);
+    document.getElementById('missionSelectBtn').onclick = () => {
+      document.getElementById('titleScreen').style.display = 'none';
+      document.getElementById('missionScreen').style.display = 'flex';
+    };
+    document.getElementById('backFromMissionBtn').onclick = () => {
+      document.getElementById('missionScreen').style.display = 'none';
+      document.getElementById('titleScreen').style.display = 'flex';
+    };
+    document.getElementById('openSettingsBtn').onclick = () => {
+      document.getElementById('titleScreen').style.display = 'none';
+      document.getElementById('settingsScreen').style.display = 'flex';
+    };
+    document.getElementById('menuBtn').onclick = () => {
+      if (!gameStarted) return;
+      paused = true;
+      document.getElementById('settingsScreen').style.display = 'flex';
+    };
+    document.getElementById('closeSettingsBtn').onclick = () => {
+      settings.sound = document.getElementById('optSound').checked;
+      settings.diff = document.getElementById('optDiff').value;
+      settings.cones = document.getElementById('optCones').checked;
+      document.getElementById('settingsScreen').style.display = 'none';
+      if (!gameStarted) document.getElementById('titleScreen').style.display = 'flex';
+      else paused = false;
+    };
+    document.getElementById('saveLoadoutBtn').onclick = () => {
+      loadout.primary = document.getElementById('pickPrimary').value;
+      loadout.gadget = document.getElementById('pickGadget').value;
+      player.ammo = loadout.weapons[loadout.primary].maxAmmo;
+      refreshHotbarLabels();
+      document.getElementById('loadoutScreen').style.display = 'none';
+      paused = false;
+      sfx(440, 720, 'triangle', 0.15);
+      queueDialogue([{ name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: `Loadout equipped: ${loadout.weapons[loadout.primary].name} and ${loadout.gadget === 'rug' ? 'Mini Persian Rugs' : 'Pistachio Coins'}. Step onto the Fast-Rope Hatch [E] when ready!` }]);
+    };
+
+    function recordSecret(id, message) {
+      if (!foundSecretIds.has(id)) {
+        foundSecretIds.add(id);
+        secretsFound += 1;
+        document.getElementById('secretsHud').textContent = `${secretsFound}/4`;
+        sfx(580, 980, 'sine', 0.22);
+      }
+      queueDialogue(message);
+    }
+
+    function handleInteract() {
+      // Toggle out of Laundry Basket if currently hiding
+      if (player.hiddenInBasket) {
+        player.hiddenInBasket = false;
+        sfx(220, 320, 'triangle', 0.1);
+        return;
+      }
+
+      // Silent Spatula Takedown
+      if (!onChopperRoof) {
+        for (let i = guards.length - 1; i >= 0; i--) {
+          const g = guards[i];
+          if (g.role === 'boss') continue;
+          if (Math.hypot(player.x - g.x, player.y - g.y) < 50 && (!player.alerted || g.stunTimer > 0)) {
+            guards.splice(i, 1);
+            player.meleeSwing = 0.28;
+            sfx(150, 60, 'triangle', 0.15);
+            const quip = spatulaKills[Math.floor(Math.random() * spatulaKills.length)];
+            queueDialogue([{ name: 'GHOST-7', portrait: 'HQ', text: quip }]);
+            return;
+          }
+        }
+      }
+
+      for (const it of interactables) {
+        if (Math.hypot(player.x - it.x, player.y - it.y) > it.r) continue;
+        if (it.type === 'armory' && !onChopperRoof) {
+          paused = true;
+          document.getElementById('loadoutScreen').style.display = 'flex';
+        } else if (it.type === 'roof_ladder') {
+          onChopperRoof = !onChopperRoof;
+          sfx(300, 520, 'triangle', 0.16);
+          if (onChopperRoof) {
+            player.x = 320; player.y = 310;
+            recordSecret('heli_roof', [{ name: 'ROOFTOP MYSTERY MAN', portrait: 'SPINNER', text: "I is spinning!!!" }]);
+          } else {
+            player.x = 290; player.y = 365;
+          }
+        } else if (it.type === 'pilot' && !onChopperRoof) {
+          queueDialogue([{ name: 'PILOT DAVE', portrait: 'PILOT', text: "Whatever you do, don't climb the Roof Ladder in the back left. Dave Jr. is up there testing centrifugal force." }]);
+        } else if (it.type === 'drop' && !onChopperRoof) {
+          sfx(300, 120, 'sawtooth', 0.25);
+          loadMission(1);
+        } else if (it.type === 'basket_hide') {
+          player.hiddenInBasket = true;
+          player.x = it.x; player.y = it.y;
+          sfx(180, 120, 'triangle', 0.12);
+          queueDialogue([{ name: 'GHOST-7 (Whispering)', portrait: 'HQ', text: "Smells like royal socks in here, but nobody can see me. Press [E] again to hop out." }]);
+        } else if (it.type === 'disguise' && !it.taken) {
+          it.taken = true;
+          player.disguised = true;
+          sfx(420, 680, 'sine', 0.16);
+          queueDialogue([{ name: 'GHOST-7', portrait: 'GUARD', text: "Disguise equipped! Guards won't spot me in their vision cones unless I fire an unsilenced gun or bump right into them." }]);
+        } else if (it.type === 'secret_pistachio' && !it.taken) {
+          it.taken = true;
+          recordSecret(it.id, [{ name: 'SECRET RELIC FOUND!', portrait: 'XERXES', text: "You discovered a Solid-Gold Pistachio! Emperor Xerxes IV is going to be furious." }]);
+        } else if (it.type === 'keycard' && !it.taken) {
+          it.taken = true; player.hasKeycard = true;
+          sfx(520, 880, 'sine', 0.16);
+          document.getElementById('objText').textContent = "Head to North Gate [E]";
+          queueDialogue([{ name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Got the keycard! Move through the North Gate to enter the Royal Kitchens." }]);
+        } else if (it.type === 'chef' && !it.talked) {
+          it.talked = true; player.hasKeycard = true;
+          sfx(480, 760, 'triangle', 0.16);
+          document.getElementById('objText').textContent = "Take Throne Lift North [E]";
+          queueDialogue([
+            { name: 'HEAD CHEF', portrait: 'CHEF', text: "Shh! Keep your voice down! Emperor Xerxes hasn't tipped me since 2022, so I unplugged his Golden Peacock Mech's charger!" },
+            { name: 'HEAD CHEF', portrait: 'CHEF', text: "Here is my elevator pass—go ruin his brunch!" }
+          ]);
+        } else if (it.type === 'exit') {
+          if (player.hasKeycard) {
+            sfx(400, 800, 'triangle', 0.2);
+            loadMission(currentMission + 1);
+          } else {
+            queueDialogue([{ name: 'SECURITY DOOR', portrait: 'GUARD', text: "Locked! Complete your objective in this area first." }]);
+          }
+        }
+      }
+    }
+    canvas.addEventListener('mousedown', () => {
+      if (paused || activeDialogue || player.hp <= 0 || player.hiddenInBasket) return;
+
+      if (loadout.slot === 1) {
+        const w = loadout.weapons[loadout.primary];
+        if (player.reloading > 0 || player.fireCd > 0) return;
+        if (player.ammo <= 0) { player.reloading = 1.25; sfx(180, 120, 'sawtooth', 0.12); return; }
+        player.ammo -= 1;
+        player.fireCd = w.cd;
+        player.muzzleFlash = 0.07;
+        player.disguised = false; // Firing blows disguise
+        sfx(loadout.primary === 'shotgun' ? 220 : 540, 80, 'sawtooth', 0.09);
+
+        for (let p = 0; p < w.pellets; p++) {
+          const ang = player.angle + (Math.random() - 0.5) * w.spread;
+          bullets.push({
+            x: player.x + Math.cos(player.angle) * 20,
+            y: player.y + Math.sin(player.angle) * 20,
+            vx: Math.cos(ang) * 700, vy: Math.sin(ang) * 700,
+            fromPlayer: true, life: loadout.primary === 'shotgun' ? 0.35 : 0.95
+          });
+        }
+        if (!w.quiet) {
+          for (const g of guards) if (Math.hypot(g.x - player.x, g.y - player.y) < 420) triggerAlarm(g);
+        }
+      } else if (loadout.slot === 2) {
+        if (player.meleeSwing > 0) return;
+        player.meleeSwing = 0.28;
+        sfx(260, 140, 'triangle', 0.1);
+        for (let i = guards.length - 1; i >= 0; i--) {
+          const g = guards[i];
+          if (Math.hypot(player.x - g.x, player.y - g.y) < 56) {
+            if (g.role === 'boss') { g.hp -= 2; g.flash = 0.1; triggerAlarm(g); }
+            else {
+              guards.splice(i, 1);
+              const quip = spatulaKills[Math.floor(Math.random() * spatulaKills.length)];
+              queueDialogue([{ name: 'GHOST-7', portrait: 'HQ', text: quip }]);
+            }
+          }
+        }
+      } else if (loadout.slot === 3 && loadout.gadgetCount > 0) {
+        loadout.gadgetCount -= 1;
+        refreshHotbarLabels();
+        sfx(380, 620, 'sine', 0.12);
+        thrownGadgets.push({
+          type: loadout.gadget,
+          x: player.x + Math.cos(player.angle) * 140,
+          y: player.y + Math.sin(player.angle) * 140,
+          timer: 4.5
+        });
+      } else if (loadout.slot === 4 && loadout.baklavaCount > 0 && player.hp < 100) {
+        loadout.baklavaCount -= 1;
+        player.hp = Math.min(100, player.hp + 40);
+        refreshHotbarLabels();
+        sfx(440, 880, 'sine', 0.16);
+        queueDialogue([{ name: 'GHOST-7', portrait: 'HQ', text: "Crunchy, flaky, and restorative. +40 HP." }]);
+      }
+    });
+
+    function triggerAlarm(g) {
+      player.disguised = false;
+      if (!player.alerted) {
+        player.alerted = true;
+        sfx(680, 920, 'square', 0.22);
+        if (g.role !== 'boss') {
+          queueDialogue([{ name: 'PALACE GUARD', portrait: 'GUARD', text: "INTRUDER! He's got a spatula and bad intentions! Get him!" }]);
+        }
+      }
+      player.alarmTimer = 8.0;
+    }
+
+    // Detailed 2.5D Animated Pixel Character Renderer
+    function drawCharacter25D(x, y, angle, style, flash, stunned, walkCycle, meleeSwing, muzzleFlash, disguised) {
+      const px = Math.round(x), py = Math.round(y);
+      const bob = Math.sin(walkCycle * 10) * 2;
+      const leftFootY = 2 + Math.sin(walkCycle * 10) * 2;
+      const rightFootY = 2 - Math.sin(walkCycle * 10) * 2;
+
+      ctx.save();
+      ctx.translate(px, py);
+
+      // Ground Shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.fillRect(-14, 11, 28, 8);
+
+      const b = (gx, gy, gw, gh, col) => {
+        ctx.fillStyle = flash > 0 ? '#ffffff' : col;
+        ctx.fillRect(Math.round(gx * 3), Math.round(gy * 3), Math.round(gw * 3), Math.round(gh * 3));
+      };
+
+      if (style === 'boss') {
+        b(-9, -11 + bob * 0.2, 18, 17, '#0d0a0e');
+        b(-8, -10 + bob * 0.2, 16, 15, '#f4d35e');
+        b(-11, -9 + bob * 0.2, 3, 12, '#1d4e89');
+        b(8, -9 + bob * 0.2, 3, 12, '#00a896');
+        b(-5, -9 + bob * 0.2, 10, 6, '#c68642');
+        b(-5, -12 + bob * 0.2, 10, 3, '#f4d35e');
+        b(-4, -5 + bob * 0.2, 8, 4, '#111111');
+        ctx.restore();
+        return;
+      }
+
+      // Animated Boots
+      b(-4, leftFootY, 3, 3, '#0d0a0e');
+      b(1, rightFootY, 3, 3, '#0d0a0e');
+
+      // Torso & Big Kindergarten-Style Head
+      b(-5, -10 + bob * 0.3, 10, 13, '#0d0a0e');
+      if (style === 'player' && !disguised) {
+        b(-4, -3 + bob * 0.3, 8, 5, '#4a5d3f');
+        b(-3, -2 + bob * 0.3, 6, 3, '#2d3a27'); // Tactical armor plate
+        b(-4, -9 + bob * 0.3, 8, 6, '#e0ac69');
+        b(-4, -10 + bob * 0.3, 8, 3, '#263020');
+        b(-3, -7 + bob * 0.3, 6, 2, '#5efc82');
+      } else {
+        const tunic = style === 'immortal' ? '#6a1b9a' : '#1d4e89';
+        const turban = style === 'immortal' ? '#f4d35e' : '#f4e8c1';
+        b(-4, -3 + bob * 0.3, 8, 5, tunic);
+        b(-2, -2 + bob * 0.3, 4, 3, '#f4d35e'); // Gold sash
+        b(-4, -9 + bob * 0.3, 8, 6, '#c68642');
+        b(-4, -10 + bob * 0.3, 8, 3, turban);
+        b(-2, -7 + bob * 0.3, 1, 1, '#fff');
+        b(1, -7 + bob * 0.3, 1, 1, '#fff');
+      }
+
+      // Weapon / Spatula Arm & Muzzle Flash
+      ctx.rotate(angle);
+      if (meleeSwing > 0) {
+        ctx.rotate((0.28 - meleeSwing) * 8 - 1.1);
+        ctx.fillStyle = '#888';
+        ctx.fillRect(6, -2, 14, 3);
+        ctx.fillStyle = '#ddd';
+        ctx.fillRect(20, -5, 8, 9); // Spatula head
+      } else {
+        ctx.fillStyle = style === 'player' ? '#1f2421' : '#b0b0b0';
+        ctx.fillRect(6, -2, 16, 4);
+        if (muzzleFlash > 0) {
+          ctx.fillStyle = '#f4d35e';
+          ctx.fillRect(22, -5, 10, 10);
+        }
+      }
+      ctx.restore();
+
+      if (stunned > 0) {
+        ctx.fillStyle = '#f4d35e';
+        ctx.fillRect(px - 10, py - 38, 20, 4);
+      }
+    }
+
+    // Secret T-Posing Spinning NPC on Top of the Helicopter Blades!
+    function drawTPoseSpinner(x, y, spinAngle) {
+      ctx.save();
+      ctx.translate(Math.round(x), Math.round(y));
+      ctx.rotate(spinAngle);
+
+      // Outline & T-Pose Arms Stretched Wide
+      ctx.fillStyle = '#0d0a0e';
+      ctx.fillRect(-24, -6, 48, 12);
+      ctx.fillRect(-8, -14, 16, 28);
+
+      // T-Pose Shirt & Sleeves
+      ctx.fillStyle = '#ff6b6b';
+      ctx.fillRect(-21, -4, 42, 8);
+      ctx.fillStyle = '#e0ac69';
+      ctx.fillRect(-24, -4, 4, 8); // Left hand
+      ctx.fillRect(20, -4, 4, 8);  // Right hand
+
+      // Head & Propeller Hat
+      ctx.fillStyle = '#e0ac69';
+      ctx.fillRect(-6, -12, 12, 10);
+      ctx.fillStyle = '#f4d35e';
+      ctx.fillRect(-6, -14, 12, 3);
+      ctx.restore();
     }
     function draw25DProp(p) {
       ctx.fillStyle = '#0d0a0e';
@@ -460,6 +839,12 @@
         ctx.fillRect(p.x, p.y + p.h, p.w, 8);
         ctx.fillStyle = '#f4d35e';
         ctx.fillRect(p.x + 8, p.y + 12, p.w - 16, 4);
+      } else if (p.type === 'basket') {
+        ctx.fillRect(p.x - 3, p.y - 3, p.w + 6, p.h + 10);
+        ctx.fillStyle = '#c68642';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = '#8d5524';
+        ctx.fillRect(p.x + 4, p.y + 4, p.w - 8, p.h - 8);
       } else if (p.type === 'palm') {
         ctx.fillStyle = '#8b1e24';
         ctx.fillRect(p.x + 8, p.y + 18, 24, 20);
@@ -472,10 +857,20 @@
         ctx.fillRect(p.x, p.y, p.w, p.h);
         ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 3;
         ctx.strokeRect(p.x, p.y, p.w, p.h);
+      } else if (p.type === 'ladder') {
+        ctx.fillStyle = '#3b303f';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = '#f4d35e';
+        for (let ry = p.y + 6; ry < p.y + p.h; ry += 10) {
+          ctx.fillRect(p.x + 6, ry, p.w - 12, 4);
+        }
       }
     }
 
     function collideWall(cx, cy, r) {
+      if (onChopperRoof) {
+        return cx < 235 || cx > 565 || cy < 195 || cy > 425;
+      }
       for (const w of walls) {
         const kx = Math.max(w.x, Math.min(cx, w.x + w.w));
         const ky = Math.max(w.y, Math.min(cy, w.y + w.h));
@@ -495,11 +890,12 @@
     function loop(now) {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
-      rotorAngle += dt * 18;
+      rotorAngle += dt * 16;
 
       if (!paused && !activeDialogue && player.hp > 0) {
         if (player.fireCd > 0) player.fireCd -= dt;
         if (player.meleeSwing > 0) player.meleeSwing -= dt;
+        if (player.muzzleFlash > 0) player.muzzleFlash -= dt;
         if (player.reloading > 0) {
           player.reloading -= dt;
           if (player.reloading <= 0) {
@@ -512,16 +908,21 @@
           if (player.alarmTimer <= 0) player.alerted = false;
         }
 
-        const spd = (keys['ShiftLeft'] || keys['ShiftRight']) ? 135 : 235;
-        let dx = 0, dy = 0;
-        if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
-        if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
-        if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
-        if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
-        if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+        if (!player.hiddenInBasket) {
+          const spd = (keys['ShiftLeft'] || keys['ShiftRight']) ? 135 : 235;
+          let dx = 0, dy = 0;
+          if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
+          if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
+          if (keys['KeyA'] || keys['ArrowLeft']) dx -= 1;
+          if (keys['KeyD'] || keys['ArrowRight']) dx += 1;
+          if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
 
-        if (!collideWall(player.x + dx * spd * dt, player.y, player.r)) player.x += dx * spd * dt;
-        if (!collideWall(player.x, player.y + dy * spd * dt, player.r)) player.y += dy * spd * dt;
+          if (dx !== 0 || dy !== 0) {
+            player.walkCycle += dt;
+            if (!collideWall(player.x + dx * spd * dt, player.y, player.r)) player.x += dx * spd * dt;
+            if (!collideWall(player.x, player.y + dy * spd * dt, player.r)) player.y += dy * spd * dt;
+          }
+        }
 
         const camX = player.x - canvas.width / 2;
         const camY = player.y - canvas.height / 2;
@@ -549,9 +950,11 @@
           let diff = Math.abs(angleToP - g.angle);
           if (diff > Math.PI) diff = 2 * Math.PI - diff;
 
-          if (dist < sightRange && diff < 0.52) triggerAlarm(g);
+          if (!player.hiddenInBasket && !player.disguised && dist < sightRange && diff < 0.52) {
+            triggerAlarm(g);
+          }
 
-          if (player.alerted && dist < 480) {
+          if (player.alerted && !player.hiddenInBasket && dist < 480) {
             g.angle = angleToP;
             g.shootCd -= dt;
             if (g.shootCd <= 0) {
@@ -569,6 +972,7 @@
             const ty = g.toB ? g.by : g.ay;
             if (Math.hypot(tx - g.x, ty - g.y) < 10) g.toB = !g.toB;
             else {
+              g.walkCycle += dt;
               g.angle = Math.atan2(ty - g.y, tx - g.x);
               g.x += Math.cos(g.angle) * 75 * dt;
               g.y += Math.sin(g.angle) * 75 * dt;
@@ -589,17 +993,17 @@
                   if (g.role === 'boss') {
                     queueDialogue([
                       { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "NOOO! My Golden Peacock Mech is out of juice! Tell the Chef... I'm sorry about the tip..." },
-                      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION ACCOMPLISHED! Pistachio reserves liberated! Refresh the page to replay from the Chopper." }
+                      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: `MISSION ACCOMPLISHED! You found ${secretsFound}/4 secrets! Open Mission Select to replay any stage.` }
                     ]);
                   }
                 }
                 break;
               }
             }
-          } else if (!hit && !b.fromPlayer && Math.hypot(b.x - player.x, b.y - player.y) < player.r) {
+          } else if (!hit && !b.fromPlayer && !player.hiddenInBasket && Math.hypot(b.x - player.x, b.y - player.y) < player.r) {
             player.hp = Math.max(0, player.hp - 15);
             hit = true;
-            if (player.hp <= 0) queueDialogue([{ name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Ghost-7 is down! Refresh to redeploy from the chopper." }]);
+            if (player.hp <= 0) queueDialogue([{ name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Ghost-7 is down! Refresh or use Mission Select to redeploy." }]);
           }
           if (hit) bullets.splice(i, 1);
         }
@@ -609,8 +1013,10 @@
       document.getElementById('hp').textContent = player.hp;
       document.getElementById('ammo').textContent = player.reloading > 0 ? 'RELOAD' : `${player.ammo}/${wMax}`;
       const stEl = document.getElementById('stealthState');
-      stEl.textContent = player.alerted ? `ALERT (${Math.ceil(player.alarmTimer)}s)` : 'HIDDEN';
-      stEl.style.color = player.alerted ? '#ff6b6b' : '#5efc82';
+      if (player.hiddenInBasket) { stEl.textContent = 'IN BASKET'; stEl.style.color = '#5efc82'; }
+      else if (player.disguised) { stEl.textContent = 'DISGUISED'; stEl.style.color = '#4ea8de'; }
+      else if (player.alerted) { stEl.textContent = `ALERT (${Math.ceil(player.alarmTimer)}s)`; stEl.style.color = '#ff6b6b'; }
+      else { stEl.textContent = 'HIDDEN'; stEl.style.color = '#5efc82'; }
 
       ctx.fillStyle = currentMission === 0 ? '#1b263b' : '#141013';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -618,85 +1024,105 @@
       ctx.save();
       ctx.translate(Math.round(canvas.width / 2 - player.x), Math.round(canvas.height / 2 - player.y));
 
-      if (currentMission > 0) {
-        ctx.fillStyle = currentMission === 2 ? '#c9c2b8' : '#d49b54';
-        ctx.fillRect(0, 0, 1000, 1240);
-      }
+      if (currentMission === 0 && onChopperRoof) {
+        ctx.fillStyle = '#2d3a27';
+        ctx.fillRect(220, 180, 360, 264);
+        ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 4;
+        ctx.strokeRect(220, 180, 360, 264);
 
-      for (const p of props) draw25DProp(p);
+        draw25DProp({ type: 'ladder', x: 260, y: 350, w: 44, h: 44 });
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 12px Courier New';
+        ctx.fillText('[E] CLIMB DOWN', 238, 342);
 
-      for (const tg of thrownGadgets) {
-        ctx.fillStyle = tg.type === 'rug' ? '#8b1e24' : '#f4d35e';
-        ctx.fillRect(tg.x - 16, tg.y - 10, 32, 20);
-      }
-
-      for (const it of interactables) {
-        if (it.taken) continue;
-        ctx.fillStyle = '#f4d35e';
-        ctx.fillRect(it.x - 8, it.y - 8, 16, 16);
-        if (Math.hypot(player.x - it.x, player.y - it.y) < it.r + 12) {
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 12px Courier New';
-          ctx.fillText('[E] INTERACT', it.x - 42, it.y - 18);
-        }
-      }
-
-      if (settings.cones && currentMission > 0) {
-        const range = settings.diff === 'ghost' ? 340 : (settings.diff === 'casual' ? 220 : 280);
-        for (const g of guards) {
-          if (g.stunTimer > 0) continue;
-          ctx.fillStyle = player.alerted ? 'rgba(255, 70, 70, 0.22)' : 'rgba(244, 211, 94, 0.20)';
-          ctx.beginPath();
-          ctx.moveTo(g.x, g.y);
-          ctx.arc(g.x, g.y, range, g.angle - 0.52, g.angle + 0.52);
-          ctx.closePath();
-          ctx.fill();
-        }
-      }
-
-      for (const w of walls) {
-        ctx.fillStyle = '#1d4e89';
-        ctx.fillRect(w.x, w.y, w.w, w.h);
-        ctx.fillStyle = '#102c4e';
-        ctx.fillRect(w.x, w.y + w.h, w.w, 12);
-        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 3;
-        ctx.strokeRect(w.x, w.y, w.w, w.h);
-      }
-
-      if (currentMission === 0) {
-        drawCharacter25D(525, 295, Math.PI, 'guard', 0, 0);
-      }
-
-      for (const g of guards) drawCharacter25D(g.x, g.y, g.angle, g.role, g.flash, g.stunTimer);
-      drawCharacter25D(player.x, player.y, player.angle, 'player', 0, 0);
-
-      for (const b of bullets) {
-        ctx.fillStyle = b.fromPlayer ? '#5efc82' : '#ff4d4d';
-        ctx.fillRect(Math.round(b.x - 4), Math.round(b.y - 4), 8, 8);
-      }
-
-      if (currentMission === 0) {
         ctx.save();
         ctx.translate(400, 310);
         ctx.rotate(rotorAngle);
-        ctx.fillStyle = 'rgba(255,255,255,0.14)';
-        ctx.fillRect(-230, -8, 460, 16);
-        ctx.fillRect(-8, -230, 16, 460);
+        ctx.fillStyle = '#111';
+        ctx.fillRect(-230, -10, 460, 20);
+        ctx.fillRect(-10, -230, 20, 460);
         ctx.restore();
+
+        drawTPoseSpinner(400, 310, rotorAngle);
+        ctx.fillStyle = '#f4d35e';
+        ctx.font = 'bold 14px Courier New';
+        ctx.fillText('"I is spinning!!!"', 330, 255);
+
+        drawCharacter25D(player.x, player.y, player.angle, 'player', 0, 0, player.walkCycle, player.meleeSwing, player.muzzleFlash, false);
+      } else {
+        if (currentMission > 0) {
+          ctx.fillStyle = currentMission === 2 ? '#c9c2b8' : '#d49b54';
+          ctx.fillRect(0, 0, 1000, 1240);
+        }
+
+        for (const p of props) draw25DProp(p);
+
+        for (const tg of thrownGadgets) {
+          ctx.fillStyle = tg.type === 'rug' ? '#8b1e24' : '#f4d35e';
+          ctx.fillRect(tg.x - 16, tg.y - 10, 32, 20);
+        }
+
+        for (const it of interactables) {
+          if (it.taken) continue;
+          ctx.fillStyle = it.type === 'secret_pistachio' ? '#5efc82' : '#f4d35e';
+          ctx.fillRect(it.x - 7, it.y - 7, 14, 14);
+          if (Math.hypot(player.x - it.x, player.y - it.y) < it.r + 12) {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Courier New';
+            ctx.fillText(`[E] ${it.label || 'INTERACT'}`, it.x - 44, it.y - 18);
+          }
+        }
+
+        if (settings.cones && currentMission > 0) {
+          const range = settings.diff === 'ghost' ? 340 : (settings.diff === 'casual' ? 220 : 280);
+          for (const g of guards) {
+            if (g.stunTimer > 0) continue;
+            ctx.fillStyle = player.alerted ? 'rgba(255, 70, 70, 0.22)' : 'rgba(244, 211, 94, 0.20)';
+            ctx.beginPath();
+            ctx.moveTo(g.x, g.y);
+            ctx.arc(g.x, g.y, range, g.angle - 0.52, g.angle + 0.52);
+            ctx.closePath();
+            ctx.fill();
+          }
+        }
+
+        for (const w of walls) {
+          ctx.fillStyle = '#1d4e89';
+          ctx.fillRect(w.x, w.y, w.w, w.h);
+          ctx.fillStyle = '#102c4e';
+          ctx.fillRect(w.x, w.y + w.h, w.w, 12);
+          ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 3;
+          ctx.strokeRect(w.x, w.y, w.w, w.h);
+        }
+
+        if (currentMission === 0) {
+          drawCharacter25D(525, 295, Math.PI, 'guard', 0, 0, 0, 0, 0, false);
+        }
+
+        for (const g of guards) {
+          drawCharacter25D(g.x, g.y, g.angle, g.role, g.flash, g.stunTimer, g.walkCycle, 0, 0, false);
+        }
+
+        if (!player.hiddenInBasket) {
+          drawCharacter25D(player.x, player.y, player.angle, 'player', 0, 0, player.walkCycle, player.meleeSwing, player.muzzleFlash, player.disguised);
+        }
+
+        for (const b of bullets) {
+          ctx.fillStyle = b.fromPlayer ? '#5efc82' : '#ff4d4d';
+          ctx.fillRect(Math.round(b.x - 4), Math.round(b.y - 4), 8, 8);
+        }
+
+        if (currentMission === 0) {
+          ctx.save();
+          ctx.translate(400, 310);
+          ctx.rotate(rotorAngle);
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.fillRect(-230, -8, 460, 16);
+          ctx.fillRect(-8, -230, 16, 460);
+          ctx.restore();
+        }
       }
 
       ctx.restore();
-
-      const cx = Math.round(mouse.x), cy = Math.round(mouse.y);
-      ctx.fillStyle = '#0d0a0e';
-      ctx.fillRect(cx - 12, cy - 3, 24, 6);
-      ctx.fillRect(cx - 3, cy - 12, 6, 24);
-      ctx.fillStyle = '#5efc82';
-      ctx.fillRect(cx - 10, cy - 1, 8, 2);
-      ctx.fillRect(cx + 2, cy - 1, 8, 2);
-      ctx.fillRect(cx - 1, cy - 10, 2, 8);
-      ctx.fillRect(cx - 1, cy + 2, 2, 8);
-
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
