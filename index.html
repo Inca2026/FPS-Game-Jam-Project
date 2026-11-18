@@ -8,17 +8,18 @@
     #crosshair {
       position: fixed; top: 50%; left: 50%; width: 12px; height: 12px;
       border: 2px solid #00ff66; border-radius: 50%; transform: translate(-50%, -50%);
-      pointer-events: none;
+      pointer-events: none; z-index: 5;
     }
     #hud {
       position: fixed; top: 15px; left: 15px; color: #00ff66;
       background: rgba(0, 20, 0, 0.7); padding: 10px 15px; border: 1px solid #00ff66;
+      z-index: 5;
     }
     #dialogue {
       position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
       width: 70%; max-width: 700px; background: rgba(10, 15, 25, 0.9);
       color: #ffd700; border: 2px solid #ffd700; padding: 15px 20px;
-      font-size: 16px; display: none; text-align: center;
+      font-size: 16px; display: none; text-align: center; z-index: 5;
     }
     #overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); color: #fff;
@@ -26,12 +27,14 @@
       cursor: pointer; text-align: center; z-index: 10;
     }
     h1 { color: #ffd700; margin-bottom: 5px; }
+    #err { color: #ff4444; margin-top: 15px; max-width: 80%; }
   </style>
 </head>
 <body>
   <div id="overlay">
     <h1>OPERATION: PEACOCK DOWN</h1>
     <p>Click anywhere to deploy | WASD to Move | Mouse to Aim | Click to Fire</p>
+    <div id="err"></div>
   </div>
   <div id="hud">TARGET: EMPEROR XERXES IV | ENEMIES LEFT: <span id="count">0</span></div>
   <div id="crosshair"></div>
@@ -40,13 +43,17 @@
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com",
-        "three/addons/": "https://unpkg.com"
+        "three": "https://jsdelivr.net",
+        "three/addons/": "https://jsdelivr.net"
       }
     }
   </script>
 
   <script type="module">
+    window.onerror = (msg) => {
+      document.getElementById('err').textContent = "Error: " + msg;
+    };
+
     import * as THREE from 'three';
     import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
@@ -78,14 +85,16 @@
     carpet.position.set(0, 0.02, -5);
     scene.add(carpet);
 
-    for (let z = -30; z <= 20; z += 10) {
-      [-10, 10].forEach(x => {
+    const pillarZ = [-30, -20, -10, 0, 10, 20];
+    const pillarX = [-10, 10];
+    for (const z of pillarZ) {
+      for (const x of pillarX) {
         const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 8, 6), lapisMat);
         pillar.position.set(x, 4, z);
         const cap = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.8, 2.6), goldMat);
         cap.position.set(x, 8.2, z);
         scene.add(pillar, cap);
-      });
+      }
     }
 
     const dialogueEl = document.getElementById('dialogue');
@@ -108,22 +117,29 @@
       enemies.push(mesh);
     }
 
-    const guardPositions = [[-4, 10], [4, 6], [-5, -2], [5, -6], [-3, -14], [3, -14]];
-    guardPositions.forEach(pos => spawnEnemy(pos[0], pos[1]));
+    spawnEnemy(-4, 10);
+    spawnEnemy(4, 6);
+    spawnEnemy(-5, -2);
+    spawnEnemy(5, -6);
+    spawnEnemy(-3, -14);
+    spawnEnemy(3, -14);
     spawnEnemy(0, -28, true);
+
     document.getElementById('count').textContent = enemies.length;
 
     const controls = new PointerLockControls(camera, document.body);
     const overlay = document.getElementById('overlay');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let started = false;
 
     overlay.addEventListener('click', () => {
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      controls.lock();
-    });
-
-    controls.addEventListener('lock', () => {
       overlay.style.display = 'none';
-      say("HQ", "Listen up, Ghost-7. Eliminate Emperor Xerxes IV—and grab baklava from the breakroom if you see any.");
+      if (!started) {
+        started = true;
+        say("HQ", "Listen up, Ghost-7. Eliminate Emperor Xerxes IV—and grab baklava from the breakroom if you see any.");
+      }
+      try { controls.lock(); } catch (e) {}
     });
 
     controls.addEventListener('unlock', () => {
@@ -134,7 +150,6 @@
     document.addEventListener('keydown', e => keys[e.code] = true);
     document.addEventListener('keyup', e => keys[e.code] = false);
 
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playLaser() {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -151,7 +166,10 @@
     let bossAnnounced = false;
 
     window.addEventListener('mousedown', () => {
-      if (!controls.isLocked) return;
+      if (overlay.style.display !== 'none') return;
+      if (!controls.isLocked) {
+        try { controls.lock(); } catch (e) {}
+      }
       playLaser();
       raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
       const hits = raycaster.intersectObjects(enemies);
@@ -188,7 +206,7 @@
       requestAnimationFrame(animate);
       const dt = clock.getDelta();
 
-      if (controls.isLocked) {
+      if (overlay.style.display === 'none') {
         const speed = 10 * dt;
         if (keys['KeyW']) controls.moveForward(speed);
         if (keys['KeyS']) controls.moveForward(-speed);
@@ -201,7 +219,9 @@
         }
       }
 
-      enemies.forEach(e => { e.rotation.y += dt * (e.userData.isBoss ? 1.5 : 0.5); });
+      for (const e of enemies) {
+        e.rotation.y += dt * (e.userData.isBoss ? 1.5 : 0.5);
+      }
       renderer.render(scene, camera);
     }
     animate();
