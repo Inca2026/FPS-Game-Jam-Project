@@ -3,7 +3,7 @@ const MISSIONS_USA = {
     title: "CH 0: MEGACORP LOGISTICS (USA)",
     obj: "Fix Printer [E], Finish TPS Reports at Desk [E], Exit Alley [E]",
     bg: "#1e1b24", floor: "#7c7267", w: 960, h: 960,
-    spawn: { x: 240, y: 240 },
+    spawn: { x: 240, y: 270 },
     isCivilian: true,
     walls: [
       { x: 0, y: 0, w: 960, h: 36 }, { x: 0, y: 924, w: 960, h: 36 },
@@ -25,7 +25,7 @@ const MISSIONS_USA = {
     ],
     interactables: [
       { type: 'printer', x: 712, y: 364, r: 55, done: false, label: 'FIX PRINTER' },
-      { type: 'desk_pc', x: 220, y: 210, r: 58, done: false, label: 'DO TPS REPORTS' },
+      { type: 'desk_pc', x: 220, y: 210, r: 65, done: false, label: 'DO TPS REPORTS' },
       { type: 'coworker', x: 610, y: 210, r: 58, label: 'TALK TO LINDA' },
       { type: 'tpose_secret', id: 'sec_0', x: 850, y: 840, r: 50, taken: false, label: 'SPINNING JANITOR' },
       { type: 'exit', x: 480, y: 885, r: 65, label: 'CLOCK OUT (ALLEY)' }
