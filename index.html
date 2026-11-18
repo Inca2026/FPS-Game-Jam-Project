@@ -2,34 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Operation: Peacock Down — Pixel Tactical</title>
+  <title>Operation: Peacock Down — 2.5D Pixel Tactical</title>
   <style>
     * { box-sizing: border-box; image-rendering: pixelated; }
     body {
-      margin: 0; overflow: hidden; background: #141013;
+      margin: 0; overflow: hidden; background: #120e14;
       font-family: 'Courier New', monospace; user-select: none; color: #f4f4f4;
+      cursor: none;
     }
-    canvas { display: block; cursor: crosshair; }
+    canvas { display: block; }
     .pixel-box {
       background: #221c24; border: 4px solid #f4d35e;
       box-shadow: 0 0 0 4px #0d0a0e, inset 0 0 0 3px #3b303f;
     }
     #hud {
       position: fixed; top: 12px; left: 12px; padding: 10px 14px;
-      font-size: 13px; line-height: 1.5; z-index: 5; min-width: 270px;
+      font-size: 13px; line-height: 1.5; z-index: 5; min-width: 290px;
     }
     #menuBtn {
       position: fixed; top: 12px; right: 12px; padding: 8px 14px;
-      font-family: inherit; font-weight: bold; cursor: pointer; z-index: 6;
+      font-family: inherit; font-weight: bold; cursor: none; z-index: 6;
       background: #f4d35e; color: #141013; border: 3px solid #0d0a0e;
     }
+    #hotbar {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; z-index: 6;
+    }
+    .slot {
+      width: 112px; padding: 8px 6px; text-align: center; font-size: 11px;
+      background: #1a151c; border: 3px solid #554759; color: #bbb;
+    }
+    .slot.active {
+      border-color: #f4d35e; background: #2f2633; color: #fff;
+      transform: translateY(-4px);
+    }
     #dialogueWrap {
-      position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+      position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%);
       width: 82%; max-width: 780px; display: none; z-index: 8;
       padding: 12px; gap: 14px; align-items: center;
     }
     #portrait {
-      width: 68px; height: 68px; border: 3px solid #0d0a0e;
+      width: 72px; height: 72px; border: 3px solid #0d0a0e;
       background: #3b303f; flex-shrink: 0;
     }
     #dialogueText { flex: 1; font-size: 14px; line-height: 1.4; }
@@ -40,17 +53,17 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       z-index: 20; padding: 20px; text-align: center;
     }
-    .panel { padding: 24px 32px; max-width: 540px; width: 100%; }
-    h1 { color: #f4d35e; margin: 0 0 8px; font-size: 26px; letter-spacing: 2px; }
+    .panel { padding: 22px 28px; max-width: 580px; width: 100%; }
+    h1 { color: #f4d35e; margin: 0 0 8px; font-size: 24px; letter-spacing: 2px; }
     .btn {
-      display: inline-block; margin: 8px 6px; padding: 10px 22px;
-      font-family: inherit; font-size: 15px; font-weight: bold;
-      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e; cursor: pointer;
+      display: inline-block; margin: 8px 6px; padding: 10px 20px;
+      font-family: inherit; font-size: 14px; font-weight: bold;
+      background: #f4d35e; color: #141013; border: 3px solid #0d0a0e; cursor: none;
     }
     .btn:hover { background: #ffe680; }
     .setting-row {
       display: flex; justify-content: space-between; align-items: center;
-      margin: 12px 0; font-size: 14px; text-align: left;
+      margin: 10px 0; font-size: 13px; text-align: left;
     }
   </style>
 </head>
@@ -58,12 +71,43 @@
   <div id="titleScreen" class="screen">
     <div class="panel pixel-box">
       <h1>OPERATION: PEACOCK DOWN</h1>
-      <p style="color:#ccc; font-size:13px;">A Pixel-Art Stealth-Action Satire</p>
+      <p style="color:#5efc82; font-size:13px; margin:0 0 12px;">3-MISSION CAMPAIGN | 2.5D PIXEL TACTICAL</p>
       <p style="font-size:13px; line-height:1.5; text-align:left; background:#141013; padding:10px; border:2px solid #3b303f;">
-        <strong>BRIEFING:</strong> Emperor Xerxes IV has hijacked the global pistachio supply to fuel his Golden Peacock Mech. Infiltrate the palace, avoid vision cones for silent takedowns, steal the Vault Keycard, and end his brunch forever.
+        <strong>MISSION 0 — CHOPPER BRIEFING:</strong> Customize your loadout at the Gun Rack inside the Blackhawk, talk to your squad, and rope down into the 3-mission campaign ending at Emperor Xerxes IV's Throne Room.
       </p>
-      <button class="btn" id="playBtn">START MISSION</button>
+      <button class="btn" id="playBtn">BOARD HELICOPTER</button>
       <button class="btn" id="openSettingsBtn">SETTINGS</button>
+    </div>
+  </div>
+
+  <div id="loadoutScreen" class="screen" style="display:none;">
+    <div class="panel pixel-box">
+      <h1>CHOPPER ARMORY — CUSTOMIZE LOADOUT</h1>
+      <p style="font-size:12px; color:#ccc;">Pick your Primary Weapon [Slot 1] and Tactical Gadget [Slot 3]:</p>
+      <div class="setting-row">
+        <span><strong>[Slot 1] Primary Firearm:</strong></span>
+        <select id="pickPrimary" style="font-family:inherit; padding:5px;">
+          <option value="pistol">Silenced PPK (8 rds | Quiet & Accurate)</option>
+          <option value="smg">Tactical MP5 (18 rds | Fast Burst)</option>
+          <option value="shotgun">Breacher 12G (4 rds | Heavy Spread)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span><strong>[Slot 2] Melee:</strong></span>
+        <span style="color:#f4d35e;">Tactical Spatula (Silent Backstab)</span>
+      </div>
+      <div class="setting-row">
+        <span><strong>[Slot 3] Tactical Gadget:</strong></span>
+        <select id="pickGadget" style="font-family:inherit; padding:5px;">
+          <option value="rug">Mini Persian Rug (Stuns Guards 4s)</option>
+          <option value="coin">Brass Pistachio Coin (Lures Guards)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span><strong>[Slot 4] Ration:</strong></span>
+        <span style="color:#5efc82;">Emergency Baklava (+40 HP)</span>
+      </div>
+      <button class="btn" id="saveLoadoutBtn">EQUIP & CLOSE CRATE</button>
     </div>
   </div>
 
@@ -71,13 +115,13 @@
     <div class="panel pixel-box">
       <h1>MISSION SETTINGS</h1>
       <div class="setting-row">
-        <span>Sound Effects (Retro Synth)</span>
+        <span>Retro Synth Audio</span>
         <input type="checkbox" id="optSound" checked />
       </div>
       <div class="setting-row">
-        <span>Difficulty Mode</span>
+        <span>Difficulty</span>
         <select id="optDiff" style="font-family:inherit; padding:4px;">
-          <option value="casual">Cadet (Forgiving Guards)</option>
+          <option value="casual">Cadet (Forgiving Vision)</option>
           <option value="agent" selected>Agent (Balanced)</option>
           <option value="ghost">Ghost (Lethal Vision)</option>
         </select>
@@ -86,19 +130,26 @@
         <span>Show Enemy Vision Cones</span>
         <input type="checkbox" id="optCones" checked />
       </div>
-      <p style="font-size:12px; color:#aaa; margin-top:14px;">
-        <strong>CONTROLS:</strong> WASD Move | Shift Sneak | E/Space Silent Takedown / Interact | Click Shoot | R Reload | F Advance Dialogue
+      <p style="font-size:11px; color:#aaa; margin-top:12px;">
+        WASD Move | Shift Sneak | 1-4 Switch Gear | Click Use/Shoot | R Reload | E Interact/Backstab | F Next Dialogue
       </p>
-      <button class="btn" id="closeSettingsBtn">BACK</button>
+      <button class="btn" id="closeSettingsBtn">RESUME</button>
     </div>
   </div>
 
-  <button id="menuBtn">MENU [ESC]</button>
+  <button id="menuBtn">SETTINGS [ESC]</button>
 
   <div id="hud" class="pixel-box">
-    <div><strong>GHOST-7</strong> | HP: <span id="hp">100</span>% | <span id="stealthState" style="color:#5efc82;">HIDDEN</span></div>
-    <div>AMMO: <span id="ammo">8</span>/8 <span id="reloadTag" style="color:#ff6b6b;"></span> | INTEL: <span id="intel">0</span>/3</div>
-    <div>OBJECTIVE: <span id="objText" style="color:#f4d35e;">Find the Gold Keycard</span></div>
+    <div><strong id="missionTitle">PROLOGUE: BLACKHAWK CHOPPER</strong></div>
+    <div>HP: <span id="hp">100</span>% | <span id="stealthState" style="color:#5efc82;">HIDDEN</span> | AMMO: <span id="ammo">8/8</span></div>
+    <div>OBJ: <span id="objText" style="color:#f4d35e;">Check Gun Rack [E] & Fast-Rope [E]</span></div>
+  </div>
+
+  <div id="hotbar">
+    <div class="slot active" id="slot1">[1] SILENCED PPK</div>
+    <div class="slot" id="slot2">[2] TAC-SPATULA</div>
+    <div class="slot" id="slot3">[3] PERSIAN RUG</div>
+    <div class="slot" id="slot4">[4] BAKLAVA (x1)</div>
   </div>
 
   <div id="dialogueWrap" class="pixel-box">
@@ -106,7 +157,7 @@
     <div id="dialogueText">
       <div id="speakerName">HQ</div>
       <div id="speakerLine">...</div>
-      <div id="dialogueHint">[Press F or Click Box to Continue]</div>
+      <div id="dialogueHint">[Press F or Click Dialogue to Advance]</div>
     </div>
   </div>
 
@@ -128,7 +179,7 @@
     const settings = { sound: true, diff: 'agent', cones: true };
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-    function sfx(f1, f2, type = 'square', dur = 0.09, vol = 0.1) {
+    function sfx(f1, f2, type = 'square', dur = 0.09, vol = 0.09) {
       if (!settings.sound) return;
       if (audioCtx.state === 'suspended') audioCtx.resume();
       const o = audioCtx.createOscillator();
@@ -142,32 +193,40 @@
       o.start(); o.stop(audioCtx.currentTime + dur);
     }
 
-    // Kindergarten-style Pixel Portrait Drawer
+    // Kindergarten-Style Pixel Portraits
     function drawPortrait(who) {
       pCtx.clearRect(0, 0, 16, 16);
-      pCtx.fillStyle = who === 'XERXES' ? '#4a1525' : (who === 'GUARD' ? '#1b365d' : '#1f3325');
+      const bg = { HQ: '#1f3325', PILOT: '#243447', GUARD: '#1b365d', CHEF: '#4a3525', XERXES: '#4a1525' };
+      pCtx.fillStyle = bg[who] || '#222';
       pCtx.fillRect(0, 0, 16, 16);
 
-      // Head outline & skin
       pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(3, 2, 10, 12);
-      pCtx.fillStyle = who === 'HQ' ? '#d8a47f' : '#c68642'; pCtx.fillRect(4, 3, 8, 10);
+      pCtx.fillStyle = who === 'HQ' || who === 'PILOT' ? '#e0ac69' : '#c68642';
+      pCtx.fillRect(4, 3, 8, 10);
 
       if (who === 'HQ') {
-        pCtx.fillStyle = '#2d3a27'; pCtx.fillRect(3, 2, 10, 3); // Beret
-        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Grumpy eyes
-        pCtx.fillStyle = '#5c3a21'; pCtx.fillRect(5, 10, 6, 2); // Mustache
+        pCtx.fillStyle = '#2d3a27'; pCtx.fillRect(3, 2, 10, 3);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2);
+        pCtx.fillStyle = '#5c3a21'; pCtx.fillRect(5, 10, 6, 2);
+      } else if (who === 'PILOT') {
+        pCtx.fillStyle = '#111'; pCtx.fillRect(3, 2, 10, 4);
+        pCtx.fillStyle = '#5efc82'; pCtx.fillRect(4, 5, 8, 2);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 1);
+      } else if (who === 'CHEF') {
+        pCtx.fillStyle = '#ffffff'; pCtx.fillRect(3, 0, 10, 4);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 2);
       } else if (who === 'GUARD') {
-        pCtx.fillStyle = '#f4e8c1'; pCtx.fillRect(3, 1, 10, 4); // Turban
-        pCtx.fillStyle = '#fff'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Wide panicked eyes
-        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 2); // Open mouth
+        pCtx.fillStyle = '#f4e8c1'; pCtx.fillRect(3, 1, 10, 4);
+        pCtx.fillStyle = '#fff'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2);
+        pCtx.fillStyle = '#0d0a0e'; pCtx.fillRect(6, 10, 4, 2);
       } else if (who === 'XERXES') {
-        pCtx.fillStyle = '#f4d35e'; pCtx.fillRect(3, 0, 10, 4); // Crown
-        pCtx.fillStyle = '#ff4d4d'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2); // Angry eyes
-        pCtx.fillStyle = '#111'; pCtx.fillRect(4, 10, 8, 4); // Huge royal beard
+        pCtx.fillStyle = '#f4d35e'; pCtx.fillRect(3, 0, 10, 4);
+        pCtx.fillStyle = '#ff4d4d'; pCtx.fillRect(5, 6, 2, 2); pCtx.fillRect(9, 6, 2, 2);
+        pCtx.fillStyle = '#111'; pCtx.fillRect(4, 10, 8, 4);
       }
     }
 
-    // Queueable Story Dialogue System
     const dialogueQueue = [];
     let activeDialogue = null;
     const dWrap = document.getElementById('dialogueWrap');
@@ -188,248 +247,246 @@
       document.getElementById('speakerLine').textContent = activeDialogue.text;
       drawPortrait(activeDialogue.portrait || 'HQ');
       dWrap.style.display = 'flex';
-      sfx(320, 480, 'triangle', 0.06, 0.08);
+      sfx(340, 500, 'triangle', 0.06, 0.07);
     }
-
     dWrap.addEventListener('click', nextDialogue);
 
-    // Menu & Settings Navigation
+    // Loadout System
+    const loadout = {
+      slot: 1,
+      primary: 'pistol',
+      gadget: 'rug',
+      gadgetCount: 2,
+      baklavaCount: 1,
+      weapons: {
+        pistol: { name: 'SILENCED PPK', maxAmmo: 8, cd: 0.34, spread: 0.03, pellets: 1, quiet: true },
+        smg: { name: 'TACTICAL MP5', maxAmmo: 18, cd: 0.14, spread: 0.11, pellets: 1, quiet: false },
+        shotgun: { name: 'BREACHER 12G', maxAmmo: 4, cd: 0.75, spread: 0.28, pellets: 5, quiet: false }
+      }
+    };
+
+    function selectSlot(n) {
+      loadout.slot = n;
+      for (let i = 1; i <= 4; i++) {
+        document.getElementById('slot' + i).classList.toggle('active', i === n);
+      }
+      sfx(460, 560, 'sine', 0.04, 0.05);
+    }
+
+    function refreshHotbarLabels() {
+      document.getElementById('slot1').textContent = `[1] ${loadout.weapons[loadout.primary].name}`;
+      document.getElementById('slot3').textContent = `[3] ${loadout.gadget === 'rug' ? 'PERSIAN RUG' : 'PISTACHIO COIN'} (x${loadout.gadgetCount})`;
+      document.getElementById('slot4').textContent = `[4] BAKLAVA (x${loadout.baklavaCount})`;
+    }
     let paused = true;
     let gameStarted = false;
-    const titleScreen = document.getElementById('titleScreen');
-    const settingsScreen = document.getElementById('settingsScreen');
-
-    document.getElementById('openSettingsBtn').onclick = () => {
-      titleScreen.style.display = 'none';
-      settingsScreen.style.display = 'flex';
-    };
-    document.getElementById('closeSettingsBtn').onclick = () => {
-      settings.sound = document.getElementById('optSound').checked;
-      settings.diff = document.getElementById('optDiff').value;
-      settings.cones = document.getElementById('optCones').checked;
-      settingsScreen.style.display = 'none';
-      if (!gameStarted) titleScreen.style.display = 'flex';
-      else paused = false;
-    };
-    document.getElementById('menuBtn').onclick = () => {
-      if (!gameStarted) return;
-      paused = true;
-      settingsScreen.style.display = 'flex';
-    };
-    const WORLD_W = 1280;
-    const WORLD_H = 2800;
+    let currentMission = 0; // 0 = Chopper, 1 = Courtyard, 2 = Royal Kitchens, 3 = Throne Room
+    let rotorAngle = 0;
 
     const player = {
-      x: 640, y: 2620, r: 16, angle: -Math.PI / 2,
-      hp: 100, ammo: 8, maxAmmo: 8, fireCooldown: 0, reloading: 0,
-      hasKeycard: false, intelCount: 0, alerted: false, alarmTimer: 0
+      x: 400, y: 320, r: 16, angle: 0,
+      hp: 100, ammo: 8, fireCd: 0, reloading: 0,
+      hasKeycard: false, alerted: false, alarmTimer: 0, meleeSwing: 0
     };
 
-    const walls = [
-      { x: 0, y: 0, w: 48, h: WORLD_H },
-      { x: WORLD_W - 48, y: 0, w: 48, h: WORLD_H },
-      { x: 0, y: 0, w: WORLD_W, h: 48 },
-      { x: 0, y: WORLD_H - 48, w: WORLD_W, h: 48 },
-      // Courtyard Dividers (Sneak Cover)
-      { x: 48, y: 2150, w: 460, h: 40 },
-      { x: 772, y: 2150, w: 460, h: 40 },
-      { x: 320, y: 2350, w: 140, h: 90 },
-      { x: 820, y: 2350, w: 140, h: 90 },
-      // Hall of Mirrors & Keycard Wing
-      { x: 48, y: 1450, w: 480, h: 40 },
-      { x: 752, y: 1450, w: 480, h: 40 },
-      { x: 240, y: 1750, w: 180, h: 120 },
-      { x: 860, y: 1750, w: 180, h: 120 },
-      // Locked Throne Gate (Opens with Gold Keycard)
-      { x: 48, y: 780, w: 472, h: 48 },
-      { x: 760, y: 780, w: 472, h: 48 }
-    ];
+    let walls = [];
+    let props = []; // 2.5D Tables, Rugs, Palms, Crates, Helicopter Parts
+    let guards = [];
+    let interactables = [];
+    let bullets = [];
+    let thrownGadgets = [];
 
-    const throneDoor = { x: 520, y: 780, w: 240, h: 48, locked: true };
+    function loadMission(num) {
+      currentMission = num;
+      walls = []; props = []; guards = []; interactables = []; bullets = []; thrownGadgets = [];
+      player.alerted = false; player.alarmTimer = 0; player.hasKeycard = false;
+      loadout.gadgetCount = 2;
+      refreshHotbarLabels();
 
-    const items = [
-      { type: 'keycard', x: 1120, y: 1620, taken: false, label: 'GOLD KEYCARD' },
-      { type: 'intel', x: 150, y: 2260, taken: false, label: 'DIARY #1' },
-      { type: 'intel', x: 1100, y: 1100, taken: false, label: 'DIARY #2' },
-      { type: 'intel', x: 160, y: 920, taken: false, label: 'DIARY #3' },
-      { type: 'baklava', x: 160, y: 1600, taken: false, label: 'BAKLAVA' },
-      { type: 'baklava', x: 1120, y: 920, taken: false, label: 'BAKLAVA' }
-    ];
+      if (num === 0) {
+        // HELICOPTER HUB
+        document.getElementById('missionTitle').textContent = "PROLOGUE: BLACKHAWK CHOPPER";
+        document.getElementById('objText').textContent = "Customize Loadout at Crate [E], then Fast-Rope [E]";
+        player.x = 380; player.y = 310;
+        walls = [
+          { x: 220, y: 180, w: 360, h: 24 },
+          { x: 220, y: 420, w: 360, h: 24 },
+          { x: 220, y: 180, w: 24, h: 264 },
+          { x: 556, y: 180, w: 24, h: 264 }
+        ];
+        props = [
+          { type: 'heli_floor', x: 244, y: 204, w: 312, h: 216 },
+          { type: 'crate', x: 270, y: 220, w: 64, h: 44, label: 'ARMORY' },
+          { type: 'table', x: 410, y: 220, w: 80, h: 42, label: 'MAP' },
+          { type: 'rope_hatch', x: 460, y: 340, w: 60, h: 60, label: 'DROP' }
+        ];
+        interactables = [
+          { type: 'armory', x: 302, y: 242, r: 55 },
+          { type: 'pilot', x: 525, y: 300, r: 55 },
+          { type: 'drop', x: 490, y: 370, r: 55 }
+        ];
+        queueDialogue([
+          { name: 'PILOT DAVE', portrait: 'PILOT', text: "Two minutes out from Tehran Palace, Ghost-7! Don't mind the rattling—duct tape holds the tail rotor together." },
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Listen up! Emperor Xerxes IV cornered the global pistachio market to power his Golden Peacock Mech. Walk up to the Armory Crate and press [E] to pick your loadout!" },
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "When you're geared up, step onto the Fast-Rope Hatch [E] to begin Mission 1: The Outer Courtyard." }
+        ]);
+      } else if (num === 1) {
+        // MISSION 1: OUTER COURTYARD
+        document.getElementById('missionTitle').textContent = "MISSION 1: OUTER COURTYARD";
+        document.getElementById('objText').textContent = "Steal Courtyard Gate Key [E] & Reach North Gate";
+        player.x = 500; player.y = 1120;
+        walls = [
+          { x: 0, y: 0, w: 1000, h: 40 }, { x: 0, y: 1200, w: 1000, h: 40 },
+          { x: 0, y: 0, w: 40, h: 1240 }, { x: 960, y: 0, w: 40, h: 1240 },
+          { x: 40, y: 580, w: 380, h: 36 }, { x: 580, y: 580, w: 380, h: 36 }
+        ];
+        props = [
+          { type: 'carpet', x: 420, y: 60, w: 160, h: 1120 },
+          { type: 'table', x: 140, y: 860, w: 110, h: 54 },
+          { type: 'table', x: 740, y: 740, w: 110, h: 54 },
+          { type: 'palm', x: 120, y: 1080, w: 40, h: 40 },
+          { type: 'palm', x: 840, y: 1080, w: 40, h: 40 },
+          { type: 'palm', x: 120, y: 460, w: 40, h: 40 },
+          { type: 'palm', x: 840, y: 460, w: 40, h: 40 }
+        ];
+        interactables = [
+          { type: 'keycard', x: 795, y: 765, r: 48, taken: false },
+          { type: 'exit', x: 500, y: 80, r: 65 }
+        ];
+        guards = [
+          makeGuard(340, 900, 220, 900, 620, 900, 'guard'),
+          makeGuard(720, 680, 560, 680, 860, 680, 'guard'),
+          makeGuard(500, 320, 300, 320, 700, 320, 'immortal')
+        ];
+        queueDialogue([
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Boots on the ground! Intelligence says Xerxes left the Courtyard Gate Key on a patio table to the east." },
+          { name: 'PALACE GUARD', portrait: 'GUARD', text: "Ugh, third night in a row guarding potted palms. If I see one ninja in night-vision goggles, I'm calling in sick." }
+        ]);
+      } else if (num === 2) {
+        // MISSION 2: ROYAL KITCHENS & ARCHIVES
+        document.getElementById('missionTitle').textContent = "MISSION 2: ROYAL KITCHENS";
+        document.getElementById('objText').textContent = "Interrogate Royal Chef [E] & Reach Throne Lift";
+        player.x = 500; player.y = 1120;
+        walls = [
+          { x: 0, y: 0, w: 1000, h: 40 }, { x: 0, y: 1200, w: 1000, h: 40 },
+          { x: 0, y: 0, w: 40, h: 1240 }, { x: 960, y: 0, w: 40, h: 1240 },
+          { x: 260, y: 760, w: 480, h: 36 }, { x: 260, y: 380, w: 480, h: 36 }
+        ];
+        props = [
+          { type: 'carpet', x: 430, y: 60, w: 140, h: 1120 },
+          { type: 'table', x: 110, y: 900, w: 120, h: 56 },
+          { type: 'table', x: 760, y: 900, w: 120, h: 56 },
+          { type: 'table', x: 420, y: 540, w: 160, h: 64 },
+          { type: 'crate', x: 120, y: 200, w: 64, h: 48 },
+          { type: 'crate', x: 810, y: 200, w: 64, h: 48 }
+        ];
+        interactables = [
+          { type: 'chef', x: 500, y: 510, r: 58, talked: false },
+          { type: 'exit', x: 500, y: 80, r: 65 }
+        ];
+        guards = [
+          makeGuard(200, 620, 120, 620, 880, 620, 'immortal'),
+          makeGuard(800, 480, 150, 480, 850, 480, 'immortal'),
+          makeGuard(500, 220, 260, 220, 740, 220, 'immortal')
+        ];
+        queueDialogue([
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "You're inside the Royal Kitchens. The Head Chef is standing by the center banquet table—ask him how to bypass the Throne Room's shield!" },
+          { name: 'HEAD CHEF', portrait: 'CHEF', text: "Mamma mia! Who tracks desert sand next to my saffron soufflé?! Come over here if you want the secret!" }
+        ]);
+      } else if (num === 3) {
+        // MISSION 3 (FINAL): THE PEACOCK THRONE ROOM
+        document.getElementById('missionTitle').textContent = "MISSION 3 (FINAL): PEACOCK THRONE";
+        document.getElementById('objText').textContent = "Defeat Emperor Xerxes IV!";
+        player.x = 500; player.y = 1080;
+        walls = [
+          { x: 0, y: 0, w: 1000, h: 40 }, { x: 0, y: 1160, w: 1000, h: 40 },
+          { x: 0, y: 0, w: 40, h: 1200 }, { x: 960, y: 0, w: 40, h: 1200 },
+          { x: 240, y: 660, w: 140, h: 60 }, { x: 620, y: 660, w: 140, h: 60 }
+        ];
+        props = [
+          { type: 'carpet', x: 400, y: 60, w: 200, h: 1080 },
+          { type: 'table', x: 110, y: 880, w: 100, h: 52 },
+          { type: 'table', x: 790, y: 880, w: 100, h: 52 },
+          { type: 'palm', x: 120, y: 200, w: 40, h: 40 },
+          { type: 'palm', x: 840, y: 200, w: 40, h: 40 }
+        ];
+        guards = [
+          makeGuard(300, 520, 220, 520, 440, 520, 'immortal'),
+          makeGuard(700, 520, 560, 520, 780, 520, 'immortal'),
+          makeGuard(500, 220, 320, 220, 680, 220, 'boss')
+        ];
+        queueDialogue([
+          { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "SO! You are the budget-cut assassin ruining my Tuesday brunch! Behold my Golden Peacock Exosuit!" },
+          { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Wait... why is the battery light blinking red?! Did the Chef forget to plug it in?! NO MATTER—PREPARE TO BE PECKED!" },
+          { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "The Chef sabotaged his battery pack! Take him down, Ghost-7!" }
+        ]);
+      }
+    }
 
-    const guards = [];
-    function spawnGuard(x, y, patrolA, patrolB, role = 'guard') {
-      guards.push({
-        x, y, ax: patrolA.x, ay: patrolA.y, bx: patrolB.x, by: patrolB.y,
-        toB: true, role,
+    function makeGuard(x, y, ax, ay, bx, by, role) {
+      return {
+        x, y, ax, ay, bx, by, toB: true, role,
         r: role === 'boss' ? 28 : 16,
-        hp: role === 'boss' ? 24 : (role === 'immortal' ? 4 : 2),
-        maxHp: role === 'boss' ? 24 : (role === 'immortal' ? 4 : 2),
-        angle: Math.PI / 2, shootCd: 1.0, alertLevel: 0, flash: 0
-      });
-    }
-
-    // Patrolling Guards (Backstab = Instant Silent Kill!)
-    spawnGuard(420, 2480, { x: 300, y: 2480 }, { x: 600, y: 2480 }, 'guard');
-    spawnGuard(900, 2280, { x: 700, y: 2280 }, { x: 1050, y: 2280 }, 'guard');
-    spawnGuard(520, 1950, { x: 480, y: 1950 }, { x: 800, y: 1950 }, 'immortal');
-    spawnGuard(1060, 1620, { x: 960, y: 1560 }, { x: 1140, y: 1700 }, 'immortal');
-    spawnGuard(320, 1250, { x: 220, y: 1250 }, { x: 640, y: 1250 }, 'immortal');
-    spawnGuard(920, 960, { x: 640, y: 960 }, { x: 1080, y: 960 }, 'immortal');
-    spawnGuard(640, 280, { x: 460, y: 280 }, { x: 820, y: 280 }, 'boss');
-
-    const bullets = [];
-    const keys = {};
-    const mouse = { x: 0, y: 0 };
-
-    document.addEventListener('keydown', e => {
-      keys[e.code] = true;
-      if (e.code === 'KeyF' && activeDialogue) nextDialogue();
-      if (e.code === 'KeyR' && !paused && !activeDialogue && player.ammo < player.maxAmmo && player.reloading <= 0) {
-        player.reloading = 1.35;
-        sfx(240, 160, 'triangle', 0.15);
-      }
-      if ((e.code === 'KeyE' || e.code === 'Space') && !paused && !activeDialogue) handleInteractOrStealth();
-      if (e.code === 'Escape' && gameStarted) {
-        paused = !paused;
-        settingsScreen.style.display = paused ? 'flex' : 'none';
-      }
-    });
-    document.addEventListener('keyup', e => keys[e.code] = false);
-    document.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-
-    document.getElementById('playBtn').onclick = () => {
-      titleScreen.style.display = 'none';
-      gameStarted = true;
-      paused = false;
-      queueDialogue([
-        { name: 'HQ (Colonel Mustard)', portrait: 'HQ', text: "Alright Ghost-7, listen closely. You only brought 8 bullets per magazine because accounting said 'nobody needs full-auto.'" },
-        { name: 'HQ (Colonel Mustard)', portrait: 'HQ', text: "Stay out of the guards' yellow vision cones! Sneak behind them and press [E] for a silent spatula-choke. If they spot you, they'll sound the alarm!" }
-      ]);
-    };
-    // Balanced Semi-Auto Gun (Cooldown + Magazine + Accuracy Bloom)
-    canvas.addEventListener('mousedown', () => {
-      if (paused || activeDialogue || player.hp <= 0) return;
-      if (player.reloading > 0) return;
-      if (player.ammo <= 0) {
-        player.reloading = 1.35;
-        sfx(180, 120, 'sawtooth', 0.12);
-        return;
-      }
-      if (player.fireCooldown > 0) return;
-
-      player.ammo -= 1;
-      player.fireCooldown = 0.34; // Prevents spamming
-      const spread = (keys['ShiftLeft'] ? 0.02 : 0.08);
-      const shotAngle = player.angle + (Math.random() - 0.5) * spread;
-      sfx(540, 110, 'sawtooth', 0.08);
-
-      bullets.push({
-        x: player.x + Math.cos(player.angle) * 22,
-        y: player.y + Math.sin(player.angle) * 22,
-        vx: Math.cos(shotAngle) * 720,
-        vy: Math.sin(shotAngle) * 720,
-        fromPlayer: true, life: 1.0
-      });
-
-      // Gunshot noise alerts nearby guards
-      for (const g of guards) {
-        if (Math.hypot(g.x - player.x, g.y - player.y) < 380) triggerAlarm(g);
-      }
-    });
-
-    function triggerAlarm(guard) {
-      if (!player.alerted) {
-        player.alerted = true;
-        sfx(680, 920, 'square', 0.25, 0.12);
-        if (guard.role !== 'boss') {
-          queueDialogue([{ name: 'PALACE GUARD', portrait: 'GUARD', text: "HEY! Someone's sneaking around in tactical pajamas! Sound the brunch alarm!" }]);
-        }
-      }
-      player.alarmTimer = 9.0;
-    }
-
-    function handleInteractOrStealth() {
-      // 1. Check Silent Backstab Takedown
-      for (let i = guards.length - 1; i >= 0; i--) {
-        const g = guards[i];
-        if (g.role === 'boss') continue;
-        const dist = Math.hypot(player.x - g.x, player.y - g.y);
-        if (dist < 46) {
-          const angleToPlayer = Math.atan2(player.y - g.y, player.x - g.x);
-          let diff = Math.abs(angleToPlayer - g.angle);
-          if (diff > Math.PI) diff = 2 * Math.PI - diff;
-          if (diff > 1.7 || !player.alerted) {
-            guards.splice(i, 1);
-            sfx(160, 60, 'triangle', 0.14);
-            queueDialogue([{ name: 'GHOST-7 (Thinking)', portrait: 'HQ', text: "Night-night. Saved a bullet and kept my boots clean." }]);
-            return;
-          }
-        }
-      }
-
-      // 2. Check Throne Door Unlock
-      if (throneDoor.locked && Math.hypot(player.x - 640, player.y - 804) < 90) {
-        if (player.hasKeycard) {
-          throneDoor.locked = false;
-          sfx(440, 880, 'sine', 0.2);
-          document.getElementById('objText').textContent = "Defeat Emperor Xerxes IV";
-          queueDialogue([
-            { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "WHO DARES INTERRUPT MY SAFFRON OMELETTE?! Guards, why is nobody answering the intercom?!" },
-            { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Fine! I'll crush you myself in my Golden Peacock Mech—just as soon as the seat warmer finishes preheating!" }
-          ]);
-        } else {
-          queueDialogue([{ name: 'DOOR INTERCOM', portrait: 'GUARD', text: "Access Denied! Only VIPs with the shiny Gold Keycard from the East Wing may enter." }]);
-        }
-      }
-    }
-
-    // Pixel-Art Character Sprite Helper (Draws chunky pixel blocks with black outline)
-    function drawPixelChar(x, y, angle, style, flash) {
-      ctx.save();
-      ctx.translate(Math.round(x), Math.round(y));
-      ctx.rotate(angle);
-
-      const px = (gx, gy, gw, gh, col) => {
-        ctx.fillStyle = flash > 0 ? '#ffffff' : col;
-        ctx.fillRect(gx * 3, gy * 3, gw * 3, gh * 3);
+        hp: role === 'boss' ? 22 : (role === 'immortal' ? 4 : 2),
+        maxHp: role === 'boss' ? 22 : (role === 'immortal' ? 4 : 2),
+        angle: Math.PI / 2, shootCd: 1.0, stunTimer: 0, flash: 0
       };
-
-      if (style === 'boss') {
-        px(-8, -8, 16, 16, '#0d0a0e'); // Outline
-        px(-7, -7, 14, 14, '#f4d35e'); // Gold Mech Body
-        px(-9, -6, 3, 12, '#1d4e89');  // Peacock Tail Feathers
-        px(2, -7, 8, 3, '#333333');    // Left Cannon
-        px(2, 4, 8, 3, '#333333');     // Right Cannon
-        px(-3, -3, 6, 6, '#8b1e24');   // Emperor Turban
-        return ctx.restore();
-      }
-
-      px(-5, -6, 10, 12, '#0d0a0e'); // Chunky pixel outline
-      if (style === 'player') {
-        px(-4, -5, 8, 10, '#4a5d3f'); // Olive Vest
-        px(-6, -3, 2, 6, '#2d3a27');  // Rucksack
-        px(2, 1, 7, 2, '#1f2421');    // Silenced Pistol/SMG
-        px(-3, -3, 6, 6, '#263020');  // Helmet
-        px(2, -2, 2, 4, '#5efc82');   // Glowing Goggles
-      } else {
-        const bodyCol = style === 'immortal' ? '#6a1b9a' : '#1d4e89';
-        const hatCol = style === 'immortal' ? '#f4d35e' : '#f4e8c1';
-        px(-4, -5, 8, 10, bodyCol);   // Tunic
-        px(2, 1, 7, 2, '#b0b0b0');    // Spear/Rifle
-        px(-3, -3, 6, 6, hatCol);     // Turban
-      }
-      ctx.restore();
     }
+    function draw25DProp(p) {
+      ctx.fillStyle = '#0d0a0e';
+      if (p.type === 'heli_floor') {
+        ctx.fillStyle = '#2b303a';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 3;
+        ctx.strokeRect(p.x + 8, p.y + 8, p.w - 16, p.h - 16);
+      } else if (p.type === 'carpet') {
+        ctx.fillStyle = '#8b1e24';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 4;
+        ctx.strokeRect(p.x + 6, p.y + 6, p.w - 12, p.h - 12);
+      } else if (p.type === 'table') {
+        ctx.fillRect(p.x - 3, p.y - 3, p.w + 6, p.h + 14);
+        ctx.fillStyle = '#8d5524';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = '#5c3310';
+        ctx.fillRect(p.x, p.y + p.h, p.w, 10);
+        ctx.fillStyle = '#f4d35e';
+        ctx.fillRect(p.x + 12, p.y + 10, 14, 10);
+      } else if (p.type === 'crate') {
+        ctx.fillRect(p.x - 3, p.y - 3, p.w + 6, p.h + 12);
+        ctx.fillStyle = '#4a5d3f';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.fillStyle = '#2d3a27';
+        ctx.fillRect(p.x, p.y + p.h, p.w, 8);
+        ctx.fillStyle = '#f4d35e';
+        ctx.fillRect(p.x + 8, p.y + 12, p.w - 16, 4);
+      } else if (p.type === 'palm') {
+        ctx.fillStyle = '#8b1e24';
+        ctx.fillRect(p.x + 8, p.y + 18, 24, 20);
+        ctx.fillStyle = '#2e7d32';
+        ctx.fillRect(p.x, p.y, 40, 18);
+        ctx.fillStyle = '#5efc82';
+        ctx.fillRect(p.x + 6, p.y - 6, 28, 12);
+      } else if (p.type === 'rope_hatch') {
+        ctx.fillStyle = '#111';
+        ctx.fillRect(p.x, p.y, p.w, p.h);
+        ctx.strokeStyle = '#ff6b6b'; ctx.lineWidth = 3;
+        ctx.strokeRect(p.x, p.y, p.w, p.h);
+      }
+    }
+
     function collideWall(cx, cy, r) {
       for (const w of walls) {
         const kx = Math.max(w.x, Math.min(cx, w.x + w.w));
         const ky = Math.max(w.y, Math.min(cy, w.y + w.h));
         if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
       }
-      if (throneDoor.locked) {
-        const kx = Math.max(throneDoor.x, Math.min(cx, throneDoor.x + throneDoor.w));
-        const ky = Math.max(throneDoor.y, Math.min(cy, throneDoor.y + throneDoor.h));
-        if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
+      for (const p of props) {
+        if (p.type === 'table' || p.type === 'crate') {
+          const kx = Math.max(p.x, Math.min(cx, p.x + p.w));
+          const ky = Math.max(p.y, Math.min(cy, p.y + p.h));
+          if ((cx - kx) ** 2 + (cy - ky) ** 2 < r * r) return true;
+        }
       }
       return false;
     }
@@ -438,22 +495,24 @@
     function loop(now) {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      rotorAngle += dt * 18;
 
       if (!paused && !activeDialogue && player.hp > 0) {
-        if (player.fireCooldown > 0) player.fireCooldown -= dt;
+        if (player.fireCd > 0) player.fireCd -= dt;
+        if (player.meleeSwing > 0) player.meleeSwing -= dt;
         if (player.reloading > 0) {
           player.reloading -= dt;
-          if (player.reloading <= 0) { player.ammo = player.maxAmmo; sfx(420, 620, 'sine', 0.08); }
+          if (player.reloading <= 0) {
+            player.ammo = loadout.weapons[loadout.primary].maxAmmo;
+            sfx(420, 620, 'sine', 0.08);
+          }
         }
-
         if (player.alerted) {
           player.alarmTimer -= dt;
           if (player.alarmTimer <= 0) player.alerted = false;
         }
 
-        // Sneak vs Run Speed
-        const sneaking = keys['ShiftLeft'] || keys['ShiftRight'];
-        const spd = sneaking ? 135 : 240;
+        const spd = (keys['ShiftLeft'] || keys['ShiftRight']) ? 135 : 235;
         let dx = 0, dy = 0;
         if (keys['KeyW'] || keys['ArrowUp']) dy -= 1;
         if (keys['KeyS'] || keys['ArrowDown']) dy += 1;
@@ -468,57 +527,44 @@
         const camY = player.y - canvas.height / 2;
         player.angle = Math.atan2((mouse.y + camY) - player.y, (mouse.x + camX) - player.x);
 
-        // Story Item Pickups
-        for (const it of items) {
-          if (!it.taken && Math.hypot(player.x - it.x, player.y - it.y) < 34) {
-            it.taken = true;
-            sfx(500, 900, 'triangle', 0.14);
-            if (it.type === 'keycard') {
-              player.hasKeycard = true;
-              document.getElementById('objText').textContent = "Unlock Throne Gate [Press E]";
-              queueDialogue([{ name: 'HQ', portrait: 'HQ', text: "Nice! You swiped the Gold Keycard off the breakroom table. Head north to the Throne Room!" }]);
-            } else if (it.type === 'baklava') {
-              player.hp = Math.min(100, player.hp + 40);
-              queueDialogue([{ name: 'GHOST-7', portrait: 'HQ', text: "Mmm, honey pistachio baklava. +40 HP." }]);
-            } else if (it.type === 'intel') {
-              player.intelCount += 1;
-              const logs = [
-                "EMPEROR'S DIARY #1: 'Dear Diary, the guards asked for dental insurance again. I told them to chew softer pistachios.'",
-                "EMPEROR'S DIARY #2: 'Note to self: Do NOT leave the Throne Room Gold Keycard next to the toaster again.'",
-                "EMPEROR'S DIARY #3: 'My Golden Peacock Mech only runs on AAA batteries. I hope nobody brings a silenced pistol.'"
-              ];
-              queueDialogue([{ name: 'STOLEN INTEL', portrait: 'XERXES', text: logs[player.intelCount - 1] }]);
+        for (let i = thrownGadgets.length - 1; i >= 0; i--) {
+          const tg = thrownGadgets[i];
+          tg.timer -= dt;
+          for (const g of guards) {
+            if (Math.hypot(g.x - tg.x, g.y - tg.y) < 120) {
+              if (tg.type === 'rug') g.stunTimer = 2.0;
+              else if (tg.type === 'coin' && !player.alerted) g.angle = Math.atan2(tg.y - g.y, tg.x - g.x);
             }
           }
+          if (tg.timer <= 0) thrownGadgets.splice(i, 1);
         }
 
-        // Guard Patrol, Vision Cone & Combat AI
-        const sightRange = settings.diff === 'ghost' ? 360 : (settings.diff === 'casual' ? 230 : 290);
+        const sightRange = settings.diff === 'ghost' ? 340 : (settings.diff === 'casual' ? 220 : 280);
         for (const g of guards) {
           if (g.flash > 0) g.flash -= dt;
+          if (g.stunTimer > 0) { g.stunTimer -= dt; continue; }
+
           const dist = Math.hypot(player.x - g.x, player.y - g.y);
           const angleToP = Math.atan2(player.y - g.y, player.x - g.x);
           let diff = Math.abs(angleToP - g.angle);
           if (diff > Math.PI) diff = 2 * Math.PI - diff;
 
-          // Vision Cone Detection
-          if (dist < sightRange && diff < 0.55) triggerAlarm(g);
+          if (dist < sightRange && diff < 0.52) triggerAlarm(g);
 
           if (player.alerted && dist < 480) {
             g.angle = angleToP;
             g.shootCd -= dt;
             if (g.shootCd <= 0) {
-              g.shootCd = g.role === 'boss' ? 0.9 : 1.8;
+              g.shootCd = g.role === 'boss' ? 0.85 : 1.75;
               sfx(210, 90, 'square', 0.08);
               bullets.push({
                 x: g.x + Math.cos(g.angle) * (g.r + 6),
                 y: g.y + Math.sin(g.angle) * (g.r + 6),
-                vx: Math.cos(g.angle) * 350, vy: Math.sin(g.angle) * 350,
+                vx: Math.cos(g.angle) * 340, vy: Math.sin(g.angle) * 340,
                 fromPlayer: false, life: 1.8
               });
             }
           } else {
-            // Patrol between A and B
             const tx = g.toB ? g.bx : g.ax;
             const ty = g.toB ? g.by : g.ay;
             if (Math.hypot(tx - g.x, ty - g.y) < 10) g.toB = !g.toB;
@@ -529,25 +575,21 @@
             }
           }
         }
-
-        // Update Bullets
         for (let i = bullets.length - 1; i >= 0; i--) {
           const b = bullets[i];
           b.x += b.vx * dt; b.y += b.vy * dt; b.life -= dt;
           let hit = b.life <= 0 || collideWall(b.x, b.y, 3);
-
           if (!hit && b.fromPlayer) {
             for (let j = guards.length - 1; j >= 0; j--) {
               const g = guards[j];
               if (Math.hypot(b.x - g.x, b.y - g.y) < g.r) {
-                g.hp -= 1; g.flash = 0.08; hit = true;
-                triggerAlarm(g);
+                g.hp -= 1; g.flash = 0.08; hit = true; triggerAlarm(g);
                 if (g.hp <= 0) {
                   guards.splice(j, 1);
                   if (g.role === 'boss') {
                     queueDialogue([
-                      { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "CURSE YOU, GHOST-7! My Golden Peacock Mech is warranty-voided! Tell my chef... burn the omelette..." },
-                      { name: 'HQ', portrait: 'HQ', text: "Target eliminated and pistachio reserves secured! Great work, Ghost-7. Refresh to play again!" }
+                      { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "NOOO! My Golden Peacock Mech is out of juice! Tell the Chef... I'm sorry about the tip..." },
+                      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION ACCOMPLISHED! Pistachio reserves liberated! Refresh the page to replay from the Chopper." }
                     ]);
                   }
                 }
@@ -557,86 +599,104 @@
           } else if (!hit && !b.fromPlayer && Math.hypot(b.x - player.x, b.y - player.y) < player.r) {
             player.hp = Math.max(0, player.hp - 15);
             hit = true;
-            if (player.hp <= 0) {
-              queueDialogue([{ name: 'HQ', portrait: 'HQ', text: "Ghost-7 is down! Remember: sneak behind guards with [E] instead of Rambo-charging! Refresh to retry." }]);
-            }
+            if (player.hp <= 0) queueDialogue([{ name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Ghost-7 is down! Refresh to redeploy from the chopper." }]);
           }
           if (hit) bullets.splice(i, 1);
         }
       }
 
-      // Sync HUD
+      const wMax = loadout.weapons[loadout.primary].maxAmmo;
       document.getElementById('hp').textContent = player.hp;
-      document.getElementById('ammo').textContent = player.ammo;
-      document.getElementById('intel').textContent = player.intelCount;
-      document.getElementById('reloadTag').textContent = player.reloading > 0 ? '[RELOADING...]' : '';
+      document.getElementById('ammo').textContent = player.reloading > 0 ? 'RELOAD' : `${player.ammo}/${wMax}`;
       const stEl = document.getElementById('stealthState');
       stEl.textContent = player.alerted ? `ALERT (${Math.ceil(player.alarmTimer)}s)` : 'HIDDEN';
       stEl.style.color = player.alerted ? '#ff6b6b' : '#5efc82';
 
-      // Render Pixel World
-      ctx.fillStyle = '#141013';
+      ctx.fillStyle = currentMission === 0 ? '#1b263b' : '#141013';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+
       ctx.save();
       ctx.translate(Math.round(canvas.width / 2 - player.x), Math.round(canvas.height / 2 - player.y));
 
-      // Pixel Sandstone Tiles
-      ctx.fillStyle = '#d49b54';
-      ctx.fillRect(0, 0, WORLD_W, WORLD_H);
-      ctx.fillStyle = '#c28840';
-      for (let y = 0; y < WORLD_H; y += 64) {
-        for (let x = (y % 128 === 0 ? 0 : 64); x < WORLD_W; x += 128) {
-          ctx.fillRect(x, y, 64, 64);
+      if (currentMission > 0) {
+        ctx.fillStyle = currentMission === 2 ? '#c9c2b8' : '#d49b54';
+        ctx.fillRect(0, 0, 1000, 1240);
+      }
+
+      for (const p of props) draw25DProp(p);
+
+      for (const tg of thrownGadgets) {
+        ctx.fillStyle = tg.type === 'rug' ? '#8b1e24' : '#f4d35e';
+        ctx.fillRect(tg.x - 16, tg.y - 10, 32, 20);
+      }
+
+      for (const it of interactables) {
+        if (it.taken) continue;
+        ctx.fillStyle = '#f4d35e';
+        ctx.fillRect(it.x - 8, it.y - 8, 16, 16);
+        if (Math.hypot(player.x - it.x, player.y - it.y) < it.r + 12) {
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 12px Courier New';
+          ctx.fillText('[E] INTERACT', it.x - 42, it.y - 18);
         }
       }
 
-      // Royal Red Carpet
-      ctx.fillStyle = '#8b1e24';
-      ctx.fillRect(550, 120, 180, WORLD_H - 220);
-      ctx.strokeStyle = '#f4d35e'; ctx.lineWidth = 4;
-      ctx.strokeRect(556, 126, 168, WORLD_H - 232);
-
-      // Vision Cones
-      if (settings.cones) {
-        const range = settings.diff === 'ghost' ? 360 : (settings.diff === 'casual' ? 230 : 290);
+      if (settings.cones && currentMission > 0) {
+        const range = settings.diff === 'ghost' ? 340 : (settings.diff === 'casual' ? 220 : 280);
         for (const g of guards) {
+          if (g.stunTimer > 0) continue;
           ctx.fillStyle = player.alerted ? 'rgba(255, 70, 70, 0.22)' : 'rgba(244, 211, 94, 0.20)';
           ctx.beginPath();
           ctx.moveTo(g.x, g.y);
-          ctx.arc(g.x, g.y, range, g.angle - 0.55, g.angle + 0.55);
+          ctx.arc(g.x, g.y, range, g.angle - 0.52, g.angle + 0.52);
           ctx.closePath();
           ctx.fill();
         }
       }
 
-      // Items
-      for (const it of items) {
-        if (it.taken) continue;
-        ctx.fillStyle = '#0d0a0e'; ctx.fillRect(it.x - 14, it.y - 10, 28, 20);
-        ctx.fillStyle = it.type === 'keycard' ? '#f4d35e' : (it.type === 'baklava' ? '#5efc82' : '#4ea8de');
-        ctx.fillRect(it.x - 11, it.y - 7, 22, 14);
-      }
-
-      // Walls & Locked Gate
       for (const w of walls) {
-        ctx.fillStyle = '#1d4e89'; ctx.fillRect(w.x, w.y, w.w, w.h);
-        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 4; ctx.strokeRect(w.x, w.y, w.w, w.h);
-      }
-      if (throneDoor.locked) {
-        ctx.fillStyle = '#f4d35e'; ctx.fillRect(throneDoor.x, throneDoor.y, throneDoor.w, throneDoor.h);
-        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 4; ctx.strokeRect(throneDoor.x, throneDoor.y, throneDoor.w, throneDoor.h);
+        ctx.fillStyle = '#1d4e89';
+        ctx.fillRect(w.x, w.y, w.w, w.h);
+        ctx.fillStyle = '#102c4e';
+        ctx.fillRect(w.x, w.y + w.h, w.w, 12);
+        ctx.strokeStyle = '#0d0a0e'; ctx.lineWidth = 3;
+        ctx.strokeRect(w.x, w.y, w.w, w.h);
       }
 
-      // Characters & Projectiles
-      for (const g of guards) drawPixelChar(g.x, g.y, g.angle, g.role, g.flash);
-      drawPixelChar(player.x, player.y, player.angle, 'player', 0);
+      if (currentMission === 0) {
+        drawCharacter25D(525, 295, Math.PI, 'guard', 0, 0);
+      }
+
+      for (const g of guards) drawCharacter25D(g.x, g.y, g.angle, g.role, g.flash, g.stunTimer);
+      drawCharacter25D(player.x, player.y, player.angle, 'player', 0, 0);
 
       for (const b of bullets) {
         ctx.fillStyle = b.fromPlayer ? '#5efc82' : '#ff4d4d';
         ctx.fillRect(Math.round(b.x - 4), Math.round(b.y - 4), 8, 8);
       }
 
+      if (currentMission === 0) {
+        ctx.save();
+        ctx.translate(400, 310);
+        ctx.rotate(rotorAngle);
+        ctx.fillStyle = 'rgba(255,255,255,0.14)';
+        ctx.fillRect(-230, -8, 460, 16);
+        ctx.fillRect(-8, -230, 16, 460);
+        ctx.restore();
+      }
+
       ctx.restore();
+
+      const cx = Math.round(mouse.x), cy = Math.round(mouse.y);
+      ctx.fillStyle = '#0d0a0e';
+      ctx.fillRect(cx - 12, cy - 3, 24, 6);
+      ctx.fillRect(cx - 3, cy - 12, 6, 24);
+      ctx.fillStyle = '#5efc82';
+      ctx.fillRect(cx - 10, cy - 1, 8, 2);
+      ctx.fillRect(cx + 2, cy - 1, 8, 2);
+      ctx.fillRect(cx - 1, cy - 10, 2, 8);
+      ctx.fillRect(cx - 1, cy + 2, 2, 8);
+
       requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
