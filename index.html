@@ -23,7 +23,7 @@
     #overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85); color: #fff;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      cursor: pointer; text-align: center;
+      cursor: pointer; text-align: center; z-index: 10;
     }
     h1 { color: #ffd700; margin-bottom: 5px; }
   </style>
@@ -50,7 +50,6 @@
     import * as THREE from 'three';
     import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-    // Scene & Renderer
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xd9a05b);
     scene.fog = new THREE.Fog(0xd9a05b, 15, 85);
@@ -62,18 +61,15 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Lighting
     const sun = new THREE.DirectionalLight(0xfff2cc, 1.8);
     sun.position.set(15, 30, 15);
     scene.add(sun, new THREE.AmbientLight(0x554433, 1.2));
 
-    // Materials (Low-Poly Flat Shading)
     const sandMat = new THREE.MeshStandardMaterial({ color: 0xe6b873, flatShading: true });
     const lapisMat = new THREE.MeshStandardMaterial({ color: 0x1d4e89, flatShading: true });
     const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, flatShading: true });
     const carpetMat = new THREE.MeshStandardMaterial({ color: 0x8b1e24, flatShading: true });
 
-    // Palace Floor & Royal Carpet
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 80), sandMat);
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
@@ -82,7 +78,6 @@
     carpet.position.set(0, 0.02, -5);
     scene.add(carpet);
 
-    // Low-Poly Palace Pillars
     for (let z = -30; z <= 20; z += 10) {
       [-10, 10].forEach(x => {
         const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.1, 8, 6), lapisMat);
@@ -93,7 +88,6 @@
       });
     }
 
-    // Dialogue System
     const dialogueEl = document.getElementById('dialogue');
     let dialogueTimer;
     function say(speaker, text, time = 5000) {
@@ -103,7 +97,6 @@
       dialogueTimer = setTimeout(() => dialogueEl.style.display = 'none', time);
     }
 
-    // Enemies & Emperor Boss
     const enemies = [];
     function spawnEnemy(x, z, isBoss = false) {
       const geo = isBoss ? new THREE.DodecahedronGeometry(2.2, 0) : new THREE.ConeGeometry(0.8, 2.4, 5);
@@ -115,26 +108,32 @@
       enemies.push(mesh);
     }
 
-    // Spawn Palace Guards & Emperor Xerxes IV
-    [[-4, 10], [4, 6], [-5, -2], [5, -6], [-3, -14], [3, -14]].forEach(pos => spawnEnemy(pos[0], pos[1]));
-    spawnEnemy(0, -28, true); // The Emperor at the Throne
+    const guardPositions = [[-4, 10], [4, 6], [-5, -2], [5, -6], [-3, -14], [3, -14]];
+    guardPositions.forEach(pos => spawnEnemy(pos[0], pos[1]));
+    spawnEnemy(0, -28, true);
     document.getElementById('count').textContent = enemies.length;
 
-    // Controls
     const controls = new PointerLockControls(camera, document.body);
     const overlay = document.getElementById('overlay');
-    overlay.addEventListener('click', () => controls.lock());
+
+    overlay.addEventListener('click', () => {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      controls.lock();
+    });
+
     controls.addEventListener('lock', () => {
       overlay.style.display = 'none';
       say("HQ", "Listen up, Ghost-7. Eliminate Emperor Xerxes IV—and grab baklava from the breakroom if you see any.");
     });
-    controls.addEventListener('unlock', () => overlay.style.display = 'flex');
+
+    controls.addEventListener('unlock', () => {
+      overlay.style.display = 'flex';
+    });
 
     const keys = {};
     document.addEventListener('keydown', e => keys[e.code] = true);
     document.addEventListener('keyup', e => keys[e.code] = false);
 
-    // Simple Synth Gunshot Sound
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playLaser() {
       const osc = audioCtx.createOscillator();
@@ -148,7 +147,6 @@
       osc.start(); osc.stop(audioCtx.currentTime + 0.12);
     }
 
-    // Shooting & Comedy Triggers
     const raycaster = new THREE.Raycaster();
     let bossAnnounced = false;
 
@@ -160,7 +158,7 @@
       if (hits.length > 0) {
         const target = hits[0].object;
         target.userData.hp -= 1;
-        target.position.y += 0.25; // Hit hop
+        target.position.y += 0.25;
         if (target.userData.hp <= 0) {
           scene.remove(target);
           enemies.splice(enemies.indexOf(target), 1);
@@ -179,7 +177,12 @@
       }
     });
 
-    // Game Loop
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
     const clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
@@ -192,7 +195,6 @@
         if (keys['KeyA']) controls.moveRight(-speed);
         if (keys['KeyD']) controls.moveRight(speed);
 
-        // Trigger Emperor Speech when approaching throne
         if (camera.position.z < -8 && !bossAnnounced) {
           bossAnnounced = true;
           say("EMPEROR XERXES IV", "Intruder! Do you have ANY idea what the dry-cleaning bill on a 400-foot silk rug is?!", 6000);
