@@ -1,50 +1,79 @@
+const STORY_DIALOGUE = {
+  // CHAPTER 0: MEGACORP DAY JOB
+  m0_intro: [
+    { name: 'ARTHUR (Inner Monologue)', portrait: 'ARTHUR', text: "Another glorious Tuesday at MegaCorp Logistics. Four hundred spreadsheets to copy-paste before 5 PM, and the breakroom ran out of creamer." },
+    {
+      name: 'MANAGER GREG', portrait: 'BOSS',
+      text: "Arthur! Why are you standing by the potted fern?! Those Q3 Stapler Inventory TPS reports won't file themselves!",
+      choices: [
+        { label: "1. 'Yes sir, heading to my desk right now!'", reply: [{ name: 'MANAGER GREG', portrait: 'BOSS', text: "Good! And fix the jammed printer on your way—I'm not paying IT overtime." }] },
+        { label: "2. 'Have you ever noticed our stapler budget is higher than payroll?'", reply: [{ name: 'MANAGER GREG', portrait: 'BOSS', text: "Less questioning, more typing, Pendelton! Get to your computer!" }] },
+        { label: "3. 'I'm actually training to become an international secret agent.'", reply: [{ name: 'MANAGER GREG', portrait: 'BOSS', text: "Haha, hilarious. If those reports aren't done in two minutes, you're fired." }] }
+      ]
+    }
+  ],
+  m0_coworker: [
+    {
+      name: 'LINDA (Accounting)', portrait: 'CHEF',
+      text: "Psst, Arthur! Did you hear on the radio? Pistachio prices just hit $900 a pound because some Persian Emperor bought every farm on Earth!",
+      choices: [
+        { label: "1. 'Sounds like a problem for rich people. I eat peanut butter.'", reply: [{ name: 'LINDA (Accounting)', portrait: 'CHEF', text: "True! Anyway, watch out—there's a creepy black van idling outside the alley exit." }] },
+        { label: "2. 'Someone ought to sneak over there and stop him.'", reply: [{ name: 'LINDA (Accounting)', portrait: 'CHEF', text: "Yeah, like a trained spy! Definitely not a guy in a cheap tie like you." }] }
+      ]
+    }
+  ],
+  m0_printer: [
+    { name: 'OFFICE PRINTER', portrait: 'GUARD', text: "BEEP BOOP. PC LOAD LETTER. TRAY 2 EMPTY. PLEASE APPLY PERCUSSIVE MAINTENANCE [E]." },
+    { name: 'ARTHUR', portrait: 'ARTHUR', text: "*WHACK!* There. Fixed it with a stapler. Now back to my desk computer." }
+  ],
+  m0_desk: [
+    { name: 'DESKTOP PC', portrait: 'ARTHUR', text: "Uploading TPS Reports... 100% Complete! Time to clock out through the Back Alley Exit Door [E] at the bottom!" },
+    { name: 'MANAGER GREG', portrait: 'BOSS', text: "Good work, Arthur! Lock the alley door behind you—oh, and ignore the guys in black ski masks parked by the dumpster." }
+  ],
 
-const DIALOGUE_DATA = {
-  spatulaKills: [
-    "Bonk! Not bad for a guy who used to audit spreadsheets in Ohio.",
-    "Silent spatula takedown! Somewhere, a short-order cook sheds a proud tear.",
+  // CHAPTER 1: THE KIDNAPPING ALLEY
+  m1_intro: [
+    { name: 'AGENT VANCE (Kidnapper)', portrait: 'PILOT', text: "Hold it right there, Arthur Pendelton! Don't scream—we're the CIA's Ultra-Secret Snack Division!" },
+    {
+      name: 'COLONEL MUSTARD', portrait: 'HQ',
+      text: "Get in the black van, kid! Your unmatched ability to remain completely unnoticed in a boring office makes you the ONLY man capable of infiltrating Emperor Xerxes IV's palace!",
+      choices: [
+        { label: "1. 'I'm an accountant! I don't even know how to hold a gun!'", reply: [{ name: 'COLONEL MUSTARD', portrait: 'HQ', text: "That's why we're giving you a tactical spatula first! Now sneak past our rookie agents to the Black Van [E]—if they catch you, it counts as failing your audition!" }] },
+        { label: "2. 'Does this secret agent gig come with dental insurance?'", reply: [{ name: 'COLONEL MUSTARD', portrait: 'HQ', text: "Full dental AND unlimited baklava! Sneak past the perimeter agents and hop in the Black Van [E]!" }] }
+      ]
+    }
+  ],
+
+  // CHAPTER 2: AREA-52 STEALTH TRAINING
+  m2_intro: [
+    { name: 'COLONEL MUSTARD', portrait: 'HQ', text: "Welcome to Sub-Level 9 in Nevada! Before we fly you to Persia, you need to pass our 3-part Stealth Ops Bootcamp." },
+    { name: 'COLONEL MUSTARD', portrait: 'HQ', text: "Step 1: Hide in the wicker Laundry Basket [E]. Step 2: Knock out the training dummy from behind with your Tactical Spatula [E]. Step 3: Grab the Clearance Badge off the table!" }
+  ],
+
+  // CHAPTER 3: LANGLEY INTEL HEIST
+  m3_intro: [
+    { name: 'COLONEL MUSTARD', portrait: 'HQ', text: "Bad news, Arthur. Before we deploy, we need Xerxes's secret palace blueprints—and the Pentagon locked them in the Archives Wing across the hall." },
+    {
+      name: 'ARCHIVIST BOB', portrait: 'GUARD',
+      text: "Halt! Nobody enters the Restricted Intel Vault without the Director's permission!",
+      choices: [
+        { label: "1. [Bluff] 'I'm here to audit your stapler inventory.'", reply: [{ name: 'ARCHIVIST BOB', portrait: 'GUARD', text: "Oh, carry on then! Just don't touch the glowing blue blueprints on the north table!" }] },
+        { label: "2. [Sneak] 'Uh, wrong floor!' (Duck behind cover)", reply: [{ name: 'COLONEL MUSTARD', portrait: 'HQ', text: "Smooth. Put on the spare Guard Disguise on the east table or sneak around his vision cone to grab the Blueprints [E]!" }] }
+      ]
+    }
+  ],
+
+  // T-POSE SPINNER SECRET (APPEARS IN EVERY CHAPTER!)
+  tpose_secret: [
+    { name: 'MYSTERY SPINNING MAN', portrait: 'SPINNER', text: "I is spinning!!!" }
+  ],
+
+  // RANDOM SPATULA TAKEDOWN QUIPS
+  spatula_kills: [
+    "Bonk! Right in the ceremonial turban. That's what happens when you skip helmet day.",
+    "Silent spatula takedown! Somewhere, a short-order cook sheds a single proud tear.",
     "Night-night! Honestly, he looked like he needed a nap anyway.",
     "Thwack! Non-stick tactical cookware claims another victim.",
-    "Lights out! Remind me to sanitize this spatula before lunch."
-  ],
-
-  secretSpinner: [
-    { name: 'MYSTERY SPINNING DUDE', portrait: 'SPINNER', text: "I is spinning!!!" }
-  ],
-
-  missions: {
-    0: [
-      { name: 'PILOT DAVE', portrait: 'PILOT', text: "Welcome aboard, Ghost-7! Two weeks ago you were filing tax forms in Toledo—now you're our top covert operative!" },
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Don't look so panicked, kid. Grab your gear from the Armory Crate [E], or climb the Roof Ladder [E] if you want to see Dave Jr. testing physics. When ready, hit the Fast-Rope Hatch [E]!" }
-    ],
-    1: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 1 (USA): Area 51 Cardboard Box Training! Before we fly you to Persia, prove you can sneak past our sleepy MPs." },
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Hide in Laundry Baskets [E], sneak behind guards for a Spatula Takedown [E], and grab the Graduation Clipboard on the east table." }
-    ],
-    2: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 2 (USA): The Pentagon! Our top analysts lost the folder containing Emperor Xerxes IV's secret palace address." },
-      { name: 'PENTAGON GUARD', portrait: 'GUARD', text: "I swear if another 'kidnapped accountant' sneaks into the breakroom to steal classified folders, I'm switching to decaf." }
-    ],
-    3: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 3 (USA): Langley Satellite Relay! Put on that spare Technician Disguise [E] on the west table so you can walk past security and ping Xerxes's palace!" },
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "Remember: firing an unsilenced gun blows your disguise immediately." }
-    ],
-    4: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 4 (USA): Andrews Airbase! We have the Emperor's coordinates in Persia. Grab the Flight Clearance Pass [E] and board the C-130 transport plane!" },
-      { name: 'AIRBASE SENTRY', portrait: 'GUARD', text: "Nobody gets on that flight to Tehran without a signed Flight Clearance Pass. Especially not guys carrying tactical spatulas." }
-    ],
-    5: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 5 (PERSIA — 90% COMPLETE): You made it across the ocean! You're inside Emperor Xerxes IV's Outer Courtyard." },
-      { name: 'PALACE GUARD', portrait: 'GUARD', text: "Ugh, third night guarding potted palms. If I see one guy in green night-vision goggles, I'm pretending I didn't." }
-    ],
-    6: [
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "MISSION 6 (PERSIA — 95% COMPLETE): The Royal Kitchens! Grab a Guard Disguise [E] and talk to the Head Chef—he hates Xerxes more than we do." },
-      { name: 'HEAD CHEF', portrait: 'CHEF', text: "Psst! Over here by the center banquet table! I have dirt on Emperor Xerxes's mech!" }
-    ],
-    7: [
-      { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "SO! An ex-accountant from Ohio dares interrupt my Tuesday brunch?! Behold my Golden Peacock Exosuit!" },
-      { name: 'EMPEROR XERXES IV', portrait: 'XERXES', text: "Wait... why is the battery blinking at 2%?! Did the Chef unplug my charger?! NO MATTER—PREPARE TO BE PECKED!" },
-      { name: 'COLONEL MUSTARD (HQ)', portrait: 'HQ', text: "The Chef sabotaged his battery! Finish him off, Ghost-7—you're 99% done!" }
-    ]
-  }
+    "Lights out! Remind me to sanitize this spatula before we hit the breakroom."
+  ]
 };
